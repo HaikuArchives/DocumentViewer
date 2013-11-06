@@ -1,0 +1,47 @@
+SubDir TOP application ;
+
+SEARCH_SOURCE += [ FDirName $(TOP) libs ] ;
+
+DEFINES =  DEBUG=0 VIEWER_VERSION=0.32 ;
+C++FLAGS = -std=c++0x -fpermissive  -Wfatal-errors -fmax-errors=1 ;
+LINKFLAGS = -lstdc++ ;
+LINKLIBS += -L`finddir B_COMMON_LIB_DIRECTORY` ;
+
+Application DocumentViewer :
+	BaseEngine.cpp
+    	BookmarksView.cpp
+    	CircleMenuView.cpp
+	DJVUEngine.cpp
+   	DocumentView.cpp
+    	ImageButton.cpp
+    	ImagePopUp.cpp
+	ImageSpinner.cpp
+    	ImageTabView.cpp
+    	main.cpp
+    	MainWindow.cpp
+    	MainWindowRB.cpp
+	NumberControl.cpp
+    	OutlineView.cpp
+	PageNavigationView.cpp
+    	PasswordRequestWindow.cpp
+    	PDFEngine.cpp
+   	PreviewView.cpp
+   	PrintingWindow.cpp
+	PrintPreviewView.cpp
+  	SearchView.cpp
+	:	be $(TARGET_LIBSTDC++) translation
+	 	tracker root z freetype fitz jbig2dec jpeg openjpeg 
+		djvulibre
+		libcolumnlistview.a
+;
+
+Depends DocumentViewer : libcolumnlistview.a ;
+#Depends DocumentViewer : Resources.rsrc ;
+
+XRes1 DocumentViewer  Resources.rsrc ;
+
+#InstallBin "/boot/apps/DocumentViewer" : DocumentViewer ;
+HaikuInstall install : "/boot/apps/DocumentViewer" : DocumentViewer ;
+ 
+
+

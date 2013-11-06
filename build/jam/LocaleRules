@@ -1,0 +1,186 @@
+# Localization rules
+
+# Extract catalog entries from the sourcefile and put the output textfile in
+# target. This output file is then used to create the binary catalog with
+# linkcatkeys.
+rule ExtractCatalogEntries target : sources : signature : regexp
+{
+	# get compiler and defines for the platform
+	local headers ;
+	local sysHeaders ;
+	local cc ;
+	local defines ;
+	local localIncludesOption ;
+	local systemIncludesOption ;
+
+	on $(target) { # use on $(target) variable values
+		headers = $(HAIKU_CONFIG_HEADERS) $(SEARCH_SOURCE) $(SUBDIRHDRS)
+			$(HDRS) ;
+		sysHeaders = $(SUBDIRSYSHDRS) $(SYSHDRS) ;
+		defines = $(DEFINES) ;
+
+		if $(PLATFORM) = host {
+			sysHeaders += $(HOST_HDRS) ;
+			defines += $(HOST_DEFINES) ;
+
+			if $(USES_BE_API) {
+				sysHeaders += $(HOST_BE_API_HEADERS) ;
+			}
+
+			defines += $(HOST_DEFINES) ;
+			cc = $(HOST_CC) ;
+			localIncludesOption = $(HOST_LOCAL_INCLUDES_OPTION) ;
+			systemIncludesOption = $(HOST_SYSTEM_INCLUDES_OPTION) ;
+		} else {
+			sysHeaders += $(TARGET_HDRS) ;
+			defines += $(TARGET_DEFINES) ;
+			defines += $(TARGET_DEFINES) ;
+			cc = $(TARGET_CC) ;
+			localIncludesOption = $(TARGET_LOCAL_INCLUDES_OPTION) ;
+			systemIncludesOption = $(TARGET_SYSTEM_INCLUDES_OPTION) ;
+		}
+	}
+
+	DEFINES on $(target) = $(defines) ;
+	CCDEFS on $(target) = [ FDefines $(defines) ] ;
+	HDRS on $(target) = [ FIncludes $(headers) : $(localIncludesOption) ]
+		$(includesSeparator)
+		[ FSysIncludes $(sysHeaders) : $(systemIncludesOption) ] ;
+	CC on $(target) = $(cc) ;
+
+	HAIKU_CATALOG_SIGNATURE on $(target) = $(signature) ;
+	if $(regexp) = "" {
+		HAIKU_CATALOG_REGEXP on $(target) = ;
+	} else {
+		HAIKU_CATALOG_REGEXP on $(target) = -r $(regexp) ;
+	}
+
+	SEARCH on $(sources) += $(SEARCH_SOURCE) ;
+
+	local subdir
+		= [ on $(signature) return $(HAIKU_CATALOGS_SUBDIR) ] ;
+	MakeLocate $(target)
+		: [ FDirName $(HAIKU_CATALOGS_OBJECT_DIR) $(subdir) ] ;
+	Depends $(target) : $(sources) <build>collectcatkeys ;
+	LocalClean clean : $(target).pre ;
+	ExtractCatalogEntries1 $(target) : <build>collectcatkeys $(sources) ;
+}
+
+actions ExtractCatalogEntries1
+{
+	$(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR)
+	cat "$(2[2-])" \
+		| $(CC) -E $(CCDEFS) -DB_COLLECTING_CATKEYS $(HDRS) - > "$(1)".pre
+	$(2[1]) $(HAIKU_CATALOG_REGEXP) -s $(HAIKU_CATALOG_SIGNATURE) \
+		-w -o "$(1)" "$(1)".pre
+}
+
+rule LinkApplicationCatalog target : sources : signature : language
+{
+	# Link catalog entries from given catkey file into output compiled catalog
+	# file. Compiled catalog file will then be copied into the image, but only
+	# if the fingerprint matches the one from the untranslated catalog for the
+	# same file.
+
+	local subdir
+		= [ on $(signature) return $(HAIKU_CATALOGS_SUBDIR) ] ;
+	MakeLocate $(target)
+		: [ FDirName $(HAIKU_CATALOGS_OBJECT_DIR) $(subdir) ] ;
+	Depends $(target) : $(sources) <build>linkcatkeys ;
+	LocalClean clean : $(target) ;
+
+	HAIKU_CATALOG_SIGNATURE on $(target) = $(signature) ;
+	HAIKU_CATALOG_LANGUAGE on $(target) = $(language) ;
+	LinkApplicationCatalog1 $(target) : <build>linkcatkeys $(sources) ;
+}
+
+actions LinkApplicationCatalog1
+{
+	$(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR)
+	$(2[1]) "$(2[2-])" -l $(HAIKU_CATALOG_LANGUAGE) \
+		-s $(HAIKU_CATALOG_SIGNATURE) -o "$(1)"
+}
+
+rule DoCatalogs target : signature : sources : sourceLanguage : regexp
+{
+	# DoCatalogs <target> : <signature> : <sources> [ : <sourceLanguage> ]
+	#	[ : <regexp> ]
+	#
+	# Extracts the catkeys from a target's source files, generates the
+	# default catalog from them, and also generates catalogs for all
+	# translations.
+	#
+	# target:			The target.
+	# signature: 		Application MIME signature (must match the one
+	#					declared in the sourcecode).
+	# sources: 			List of cpp files where to search keys.
+	# sourceLanguage	Short name of the language of used for the strings in
+	#					the sources. Optional: default is "en".
+	# regexp            The regular expression used to parse the files.
+	#                   Optional: default is matching be_catalog->GetString
+
+	local subdir ;
+	if [ on $(SUBDIR) return $(HAIKU_MULTIPLE_LOCALIZED_TARGETS) ] {
+		subdir = $(SUBDIR_TOKENS[2-]) $(target) ;
+	} else {
+		subdir = $(SUBDIR_TOKENS[2-]) ;
+	}
+
+	HAIKU_CATALOGS_SUBDIR on $(signature) = $(subdir) ;
+
+	local generatedCatalog
+		= $(sourceLanguage:G=$(signature):E=en:S=.catalog) ;
+	MakeLocate $(generatedCatalog)
+		: [ FDirName $(HAIKU_CATALOGS_OBJECT_DIR) $(subdir) ] ;
+
+	# generate catkeys file from sources
+	ExtractCatalogEntries $(generatedCatalog:S=.catkeys)
+		: [ FGristFiles $(sources) ] : $(signature) : $(regexp) ;
+
+	# find translations
+	local translationsDir
+		= [ FDirName $(HAIKU_TOP) data catalogs $(subdir) ] ;
+	local translations = [ Glob $(translationsDir) : *.catkeys ] ;
+	translations = [ FGristFiles $(translations:BS) ] ;
+	SEARCH on $(translations) += $(translationsDir) ;
+
+	# generate catalogs from all catkeys files
+	local catkeysFiles = $(generatedCatalog:S=.catkeys) $(translations) ;
+	for catkeysFile in $(catkeysFiles) {
+		LinkApplicationCatalog $(catkeysFile:S=.catalog) : $(catkeysFile)
+			: $(signature) : $(catkeysFile:B) ;
+	}
+
+	HAIKU_CATALOG_FILES on $(target) = $(catkeysFiles:S=.catalog) ;
+	HAIKU_CATALOG_SIGNATURE on $(target) = $(signature) ;
+
+	# For the pseudo-target LocalizedTargets
+	HAIKU_LOCALIZED_TARGETS += $(target) ;
+
+	# For the pseudo-target catalogs
+	HAIKU_LOCALE_CATALOGS += $(catkeysFiles:S=.catalog) ;
+
+	# For the pseudo-target catkeys
+	HAIKU_LOCALE_OUTPUT_CATKEYS += $(generatedCatalog:S=.catkeys) ;
+}
+
+rule AddCatalogEntryAttribute target
+{
+	# AddCatalogEntryAttribute <target> : <attribute value> ;
+	#
+	# <attribute value> should be of the form
+	#	"x-vnd.Haiku-App:context:string"
+		
+	CATALOG_ENTRY on $(target) = "$(2)" ;
+
+	Depends $(target) : <build>addattr ;
+	
+	AddCatalogEntryAttribute1 $(target) 
+		: <build>addattr ;
+}
+
+actions AddCatalogEntryAttribute1
+{
+	$(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR)
+	"$(2)" -t string "SYS:NAME" "$(CATALOG_ENTRY)" "$(1)"
+}

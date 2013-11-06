@@ -1,0 +1,12 @@
+BUILD_DIR           = [ FDirName $(TOP) build ] ;
+JAM_DIR             = [ FDirName $(BUILD_DIR) jam ] ;
+
+APPS_DIRECTORY = $(finddir B_APPS_DIRECTORY) ;
+APPLICATION_DIRECTORY = $(finddir B_APPS_DIRECTORY) ;
+
+include [ FDirName $(JAM_DIR) MainBuildRules ] ;
+include [ FDirName $(JAM_DIR) HelperRules ] ;
+include [ FDirName $(JAM_DIR) BeOSRules ] ;
+include [ FDirName $(JAM_DIR) MiscRules ] ;
+include [ FDirName $(JAM_DIR) LocaleRules ] ;
+include [ FDirName $(JAM_DIR) FileRules ] ;

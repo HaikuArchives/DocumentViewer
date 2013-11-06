@@ -1,0 +1,6 @@
+SubDir TOP libs columnlistview ;
+
+StaticLibrary libcolumnlistview.a :
+	ColumnListView.cpp
+	ColumnTypes.cpp
+;

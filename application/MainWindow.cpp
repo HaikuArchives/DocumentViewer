@@ -316,10 +316,10 @@ MainWindow::_SaveSettings(void)
     
     if (fDocumentLayout != nullptr) {
     	settings
-        	<< "Split10"        << fSplitView1->ItemWeight(0L)
-        	<< "Split11"        << fSplitView1->ItemWeight(1L)
-        	<< "Split20"        << fSplitView2->ItemWeight(0L)
-        	<< "Split21"        << fSplitView2->ItemWeight(1L)
+        	<< "Split10"        << fSplitView1->ItemWeight(0)
+        	<< "Split11"        << fSplitView1->ItemWeight(1)
+        	<< "Split20"        << fSplitView2->ItemWeight(0)
+        	<< "Split21"        << fSplitView2->ItemWeight(1)
         	<< "RibbonTab"      << fRibbon->ActiveTab()
         	<< "SidebarTab"     << fTabView1->Selection()
         	<< "Fullscreen"     << (int32)fFullscreenIsOn

@@ -91,7 +91,7 @@ public:
         return( *this );
     }
 
-    Debug& operator<<(int32 number)
+    Debug& operator<<(long number)
     {
         fStr << number;
         return *this;
@@ -143,7 +143,7 @@ public:
     Debug& operator<<(int)              { return *this; }
     Debug& operator<<(uint)             { return *this; }
     Debug& operator<<(char)             { return *this; }
-    Debug& operator<<(int32)            { return *this; }
+    Debug& operator<<(long)            { return *this; }
     bool const&  state(void)            { return fState; }
     void Clear(void)                    {               }
 

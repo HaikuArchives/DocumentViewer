@@ -316,9 +316,9 @@ MainWindow::_SaveSettings(void)
     
     if (fDocumentLayout != nullptr) {
     	settings
-        	<< "Split10"        << fSplitView1->ItemWeight(0)
+        	<< "Split10"        << fSplitView1->ItemWeight((int32)0)
         	<< "Split11"        << fSplitView1->ItemWeight(1)
-        	<< "Split20"        << fSplitView2->ItemWeight(0)
+        	<< "Split20"        << fSplitView2->ItemWeight((int32)0)
         	<< "Split21"        << fSplitView2->ItemWeight(1)
         	<< "RibbonTab"      << fRibbon->ActiveTab()
         	<< "SidebarTab"     << fTabView1->Selection()

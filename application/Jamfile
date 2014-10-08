@@ -9,29 +9,28 @@ LINKLIBS += -L`finddir B_COMMON_LIB_DIRECTORY` ;
 
 Application DocumentViewer :
 	BaseEngine.cpp
-    	BookmarksView.cpp
-    	CircleMenuView.cpp
+	BookmarksView.cpp
+	CircleMenuView.cpp
 	DJVUEngine.cpp
-   	DocumentView.cpp
-    	ImageButton.cpp
-    	ImagePopUp.cpp
+	DocumentView.cpp
+	ImageButton.cpp
+	ImagePopUp.cpp
 	ImageSpinner.cpp
-    	ImageTabView.cpp
-    	main.cpp
-    	MainWindow.cpp
-    	MainWindowRB.cpp
+	ImageTabView.cpp
+	main.cpp
+	MainWindow.cpp
+	MainWindowRB.cpp
 	NumberControl.cpp
-    	OutlineView.cpp
+	OutlineView.cpp
 	PageNavigationView.cpp
-    	PasswordRequestWindow.cpp
-    	PDFEngine.cpp
-   	PreviewView.cpp
-   	PrintingWindow.cpp
+	PasswordRequestWindow.cpp
+	PDFEngine.cpp
+	PreviewView.cpp
+	PrintingWindow.cpp
 	PrintPreviewView.cpp
-  	SearchView.cpp
+	SearchView.cpp
 	:	be $(TARGET_LIBSTDC++) translation
-	 	tracker root z freetype fitz jbig2dec jpeg openjpeg 
-		djvulibre
+		tracker root z freetype jbig2dec jpeg mupdf openjp2 djvulibre
 		libcolumnlistview.a
 ;
 

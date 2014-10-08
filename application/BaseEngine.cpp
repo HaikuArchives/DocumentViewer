@@ -210,7 +210,7 @@ BaseEngine::Page(int pageNumber)
         pageNumber = 0;
     else if (pageNumber >= fPages - 1)
         pageNumber = fPages - 1;
-        
+
     pthread_mutex_lock(&fMutex[pageNumber]);
     if (fBitmap[pageNumber].first == nullptr) {
         fBitmap[pageNumber] = _RenderBitmap(pageNumber);
@@ -220,7 +220,7 @@ BaseEngine::Page(int pageNumber)
     }
     pthread_mutex_unlock(&fMutex[pageNumber]);
     fCurrentPageNo = pageNumber;
-    
+
     return fBitmap[pageNumber].first;
 }
 
@@ -340,8 +340,8 @@ void*
 BaseEngine::_TextSearchThread(void* arg)
 {
 	BaseEngine*  engine =(BaseEngine*)arg;
-    int& pages = engine->fPages;   
-    
+    int& pages = engine->fPages;
+
 	BString name = engine->fSearchString;
 	for (int page = 0;  page < pages; ++page) {
 		pthread_mutex_lock(&gTextSearchStopMutex);
@@ -349,7 +349,7 @@ BaseEngine::_TextSearchThread(void* arg)
 			engine->fStopTextSearchThread = false;
 			pthread_mutex_unlock(&gTextSearchStopMutex);
 			break;
-			//return nullptr;			
+			//return nullptr;
 		}
 		pthread_mutex_unlock(&gTextSearchStopMutex);
 		

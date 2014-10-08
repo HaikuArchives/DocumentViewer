@@ -13,7 +13,7 @@
 #include <vector>
 
 extern "C" {
-    #include <fitz.h>
+    #include <mupdf/fitz.h>
 }
 
 #include <Bitmap.h>

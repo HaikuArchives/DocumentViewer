@@ -26,12 +26,13 @@ PDFEngine::PDFEngine(BString fileName, BString& password)
     fPassword(password)
 {
 	fHighlightUnderText = true;
-    // why bgr instead of rgb?
-    fColorSpace = fz_device_bgr;
     fDocument = nullptr;
     fz_var(fDocument);
    // fz_accelerate();
     fContext = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
+	fz_register_document_handlers(fContext);
+    // why bgr instead of rgb?
+    fColorSpace = fz_device_bgr(fContext);
     
     if (!fContext) {
     	!out << "cannot init context" << endl;
@@ -85,7 +86,8 @@ PDFEngine::~PDFEngine()
 int
 PDFEngine::PageCount(void) const
 {
-	fz_count_pages(fDocument);
+	int count = fz_count_pages(fDocument);
+	return count;
 }
 
 
@@ -120,13 +122,12 @@ PDFEngine::WriteOutline(BOutlineListView* list)
 }
 
 
-tuple< vector<BString>, vector<BRect> >
+std::tuple< std::vector<BString>, std::vector<BRect> >
 PDFEngine::_FindString(BString const& name, int const& pageNumber)
 {
 	vector<BString> contextVec;
 	vector<BRect>	rectVec;
-	vector<BString> textVec;
-	
+#if 0
 	bool needWholeWord = false;
     if (GHasFlag(fSearchFlag, SEARCH_WHOLE_WORD))
     	needWholeWord = true;
@@ -142,159 +143,47 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
 	fz_device* dev = nullptr;
 	fz_var(dev);
 	
+#endif
 	fz_text_page* text = nullptr;
 	fz_var(text);
 	
 	fz_try(fContext) {
-		text = fz_new_text_page(fContext, fz_bound_page(fDocument, page));
+		text = fz_new_text_page(fContext);
+		int boxCount = fz_search_text_page(fContext, text, name, NULL, 0);
+		fz_rect boxes[boxCount];
+		int count = fz_search_text_page(fContext, text, name, boxes, boxCount);
+
+		for(fz_rect fr: boxes) {
+			BRect br;
+			br.top = fr.y0;
+			br.bottom = fr.y1;
+			br.left = fr.x0;
+			br.right = fr.x1;
+			rectVec.push_back(br);
+			// TODO we need to extract the "context" for the search results (a
+			// line of text or so)
+			contextVec.push_back(name);
+		}
+
+
+#if 0
 		dev = fz_new_text_device(fContext, sheet, text);
-		fz_run_page(fDocument, page, dev, fz_identity, nullptr);	
+		fz_run_page(fDocument, page, dev, &fz_identity, nullptr);	
 		fz_free_device(dev);
 		dev = nullptr;
+#endif
 	
 	} fz_catch(fContext) {
+#if 0
 		fz_free_device(dev);
+#endif
 		fz_free_text_page(fContext, text);
+#if 0
 		fz_free_page(fDocument, page);
+#endif
 		fz_rethrow(fContext);
 	}
 		
-	fz_text_block *block;
-	fz_text_line *line;
-	fz_text_span *span;
-	fz_text_char *ch;
-	char utf[10];
-	int i, n;
-	
-	BString str;
-	BString character;
-	BRect rect;
-	
-	auto pageBox = fz_bound_page(fDocument, page);
-	auto pageWidth = pageBox.x1 - pageBox.x0;
-    auto pageHeight = pageBox.y1 - pageBox.y0;
-	fz_rect tempRect;
-	
-	for (block = text->blocks; block < text->blocks + text->len; block++) {
-	for (line = block->lines; line < block->lines + block->len; line++) {
-	for (span = line->spans; span < line->spans + line->len; span++) {
-	for (ch = span->text; ch < span->text + span->len; ch++) {
-		character = "";
-		n = fz_runetochar(utf, ch->c);
-		for (i = 0; i < n; i++)
-			character += utf[i];	
-					
-		if (character == " ") {
-			if (str.Length() > 0) {
-				bool foundMatch = false;
-	   			if (needMatchCase) {
-					if (str.FindFirst(name) != B_ERROR) {
-						if (needWholeWord) {
-							if (str.Length() == name.Length())
-								foundMatch = true;
-						} else {
-							foundMatch = true;	
-						}
-					}		
-				} else {
-					if (str.IFindFirst(name) != B_ERROR) {
-						if (needWholeWord) {
-							if (str.Length() == name.Length())
-								foundMatch = true;
-						} else {
-							foundMatch = true;	
-						}
-					}
-				}
-			
-				if (foundMatch) {
-					#if 0
-					ch--;
-					rect.right = ch->bbox.x1;
-					rect.bottom = ch->bbox.y1;
-					ch++;
-					#endif
-					rect.right = tempRect.x1;
-					rect.bottom = tempRect.y1;
-					
-					rect.left = rect.left / pageWidth;
-					rect.right = rect.right/ pageWidth;
-					rect.top = (rect.top) / pageHeight;
-					rect.bottom = (rect.bottom) / pageHeight;
-					
-					rectVec.push_back(rect);
-				}
-				textVec.push_back(str);
-			}
-						
-			str = "";
-		} else {
-			if (str.Length() == 0) {
-				rect.left = ch->bbox.x0;
-				rect.top  = ch->bbox.y0;
-			}
-			
-			tempRect = ch->bbox;
-			str += character;
-		}
-	}
-	}
-	}
-	}
-
-	fz_free_text_page(fContext, text);
-	fz_free_text_sheet(fContext, sheet);
-	
-	int deltaIndexLeft = 4;
-	int deltaIndexRight = 4;
-	
-	bool foundMatch = false;
-	
-	for (int i = 0; i < textVec.size(); ++i) {
-		foundMatch = false;
-		
-		if (needMatchCase) {
-			if (textVec[i].FindFirst(name) != B_ERROR) {
-				if (needWholeWord) {
-					if (textVec[i].Length() == name.Length())
-						foundMatch = true;
-				} else {
-					foundMatch = true;	
-				}
-			}		
-		} else {
-			if (textVec[i].IFindFirst(name) != B_ERROR) {
-				if (needWholeWord) {
-					if (textVec[i].Length() == name.Length())
-						foundMatch = true;
-				} else {
-					foundMatch = true;	
-				}
-			}
-		}
-		
-		if (foundMatch == true) {
-			int from = i - deltaIndexLeft;
-			if (from < 0)
-				from = 0;
-				
-			int to	 = i + deltaIndexRight;
-			if (to >= textVec.size())
-				to = textVec.size() - 1;
-			
-			BString str;
-			for (int j = from; j < to; ++j) { 
-				str += textVec[j];
-				str += " ";
-			}
-				
-			str += textVec[to];
-			
-			contextVec.push_back(str);
-		}
-	}
-	
-  
 	return move(make_tuple(contextVec, rectVec));
 }
 
@@ -357,10 +246,10 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	fz_try(fContext) {
     	list = fz_new_display_list(fContext);
     	dev = fz_new_list_device(fContext, list);
-    	fz_run_page(fDocument, page, dev, fz_identity, nullptr);
+    	fz_run_page(fDocument, page, dev, &fz_identity, nullptr);
 	} fz_catch(fContext) {
     	fz_free_device(dev);
-    	fz_free_display_list(fContext, list);
+    	fz_drop_display_list(fContext, list);
     	fz_free_page(fDocument, page);
     	pthread_mutex_unlock(&gRendermutex);
     	stop = true;
@@ -374,12 +263,13 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	dev = nullptr;
 
     fz_matrix ctm;
-    fz_bbox bbox;
+    fz_rect bbox;
     
 	fz_pixmap* image = static_cast<fz_pixmap*>(nullptr);
 	fz_var(image);
 	
-	fz_rect bounds = fz_bound_page(fDocument, page);
+	fz_rect bounds;
+	fz_bound_page(fDocument, page, &bounds);
 	
 	float zoomFactor = 1;
 	
@@ -389,29 +279,30 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 		zoomFactor = width / (bounds.x1 - bounds.x0);
 	}
 	
-  	ctm = fz_scale(zoomFactor, zoomFactor);
-    ctm = fz_concat(ctm, fz_rotate(fRotation));
-    fz_rect bounds2 = fz_transform_rect(ctm, bounds);
-    fz_bbox pageBox = fz_round_rect(bounds2);
+  	fz_scale(&ctm, zoomFactor, zoomFactor);
+    fz_rotate(&ctm, fRotation);
+    fz_transform_rect(&bounds, &ctm);
+    fz_irect pageBox;
+	fz_round_rect(&pageBox, &bounds);
 	
 	fz_try(fContext) {
-    	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, pageBox);
+    	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, &pageBox);
     	
     	//save alpha
     	//fz_clear_pixmap(fContext, image); 
     	fz_clear_pixmap_with_value(fContext, image, 255);
     	dev = fz_new_draw_device(fContext, image);
     	if (list)
-    		fz_run_display_list(list, dev, ctm, pageBox, nullptr);
+    		fz_run_display_list(list, dev, &ctm, &bounds, nullptr);
    		 else
-   	 		fz_run_page(fDocument, page, dev, ctm, nullptr);
+   	 		fz_run_page(fDocument, page, dev, &ctm, nullptr);
     	
     	fz_free_device(dev);
     	dev = nullptr;
 	} fz_catch(fContext) {
 		fz_free_device(dev);
 		fz_drop_pixmap(fContext, image);
-    	fz_free_display_list(fContext, list);
+    	fz_drop_display_list(fContext, list);
 		fz_free_page(fDocument, page);
 		pthread_mutex_unlock(&gRendermutex);
     	stop = true;
@@ -432,7 +323,7 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     
     fz_free_device(dev);
 	fz_drop_pixmap(fContext, image);
-    fz_free_display_list(fContext, list);
+    fz_drop_display_list(fContext, list);
 	fz_free_page(fDocument, page);
 	return unique_ptr<BBitmap>(bitmap);
 }
@@ -468,10 +359,10 @@ PDFEngine::_RenderBitmap(int const& pageNumber)
 	fz_try(fContext) {
     	list = fz_new_display_list(fContext);
     	dev = fz_new_list_device(fContext, list);
-    	fz_run_page(fDocument, page, dev, fz_identity, nullptr);
+    	fz_run_page(fDocument, page, dev, &fz_identity, nullptr);
 	} fz_catch(fContext) {
     	fz_free_device(dev);
-    	fz_free_display_list(fContext, list);
+    	fz_drop_display_list(fContext, list);
     	fz_free_page(fDocument, page);
     	pthread_mutex_unlock(&gRendermutex);
     	stop = true;
@@ -484,29 +375,31 @@ PDFEngine::_RenderBitmap(int const& pageNumber)
 	dev = nullptr;
 
     fz_matrix ctm;
-    fz_bbox bbox;
+    fz_irect bbox;
     
 	fz_pixmap* image = nullptr;
 	fz_var(image);
 	
-	fz_rect bounds = fz_bound_page(fDocument, page);
+	fz_rect bounds;
+	fz_bound_page(fDocument, page, &bounds);
 	
-   	ctm = fz_scale(fZoomFactor, fZoomFactor);
-    ctm = fz_concat(ctm, fz_rotate(fRotation));
-    fz_rect bounds2 = fz_transform_rect(ctm, bounds);
-    fz_bbox pageBox = fz_round_rect(bounds2);
+   	fz_scale(&ctm, fZoomFactor, fZoomFactor);
+    fz_rotate(&ctm, fRotation);
+    fz_transform_rect(&bounds, &ctm);
+    fz_irect pageBox;
+	fz_round_rect(&pageBox, &bounds);
 	
 	fz_try(fContext) {
-    	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, pageBox);
+    	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, &pageBox);
     	
     	//save alpha
     	//fz_clear_pixmap(fContext, image); 
     	fz_clear_pixmap_with_value(fContext, image, 255);
     	dev = fz_new_draw_device(fContext, image);
     	if (list)
-    		fz_run_display_list(list, dev, ctm, pageBox, nullptr);
+    		fz_run_display_list(list, dev, &ctm, &bounds, nullptr);
    		 else
-   	 		fz_run_page(fDocument, page, dev, ctm, nullptr);
+   	 		fz_run_page(fDocument, page, dev, &ctm, nullptr);
     	
     	fz_free_device(dev);
     	dev = nullptr;
@@ -514,7 +407,7 @@ PDFEngine::_RenderBitmap(int const& pageNumber)
 	} fz_catch(fContext) {
 		fz_free_device(dev);
 		fz_drop_pixmap(fContext, image);
-    	fz_free_display_list(fContext, list);
+    	fz_drop_display_list(fContext, list);
 		fz_free_page(fDocument, page);
 		pthread_mutex_unlock(&gRendermutex);
     	stop = true;
@@ -534,7 +427,7 @@ PDFEngine::_RenderBitmap(int const& pageNumber)
     
     fz_free_device(dev);
 	fz_drop_pixmap(fContext, image);
-    fz_free_display_list(fContext, list);
+    fz_drop_display_list(fContext, list);
 	fz_free_page(fDocument, page);
 	pthread_mutex_unlock(&gRendermutex);
     

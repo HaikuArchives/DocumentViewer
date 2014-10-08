@@ -10,7 +10,7 @@
 #define PDFENGINE_H
 
 extern "C" {
-#include <fitz.h>
+#include <mupdf/fitz.h>
 //#include <fitz/fitz-internal.h>
 }
 

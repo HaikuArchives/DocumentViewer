@@ -9,6 +9,7 @@
 #include "PDFEngine.h"
 
 #include <UnicodeChar.h>
+#include <memory>
 #include <string>
 
 #include "Flags.h"
@@ -122,6 +123,16 @@ PDFEngine::WriteOutline(BOutlineListView* list)
 }
 
 
+namespace std {
+// FIXME remove when the compiler supports this C++11 feature.
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+}
+
+
 std::tuple< std::vector<BString>, std::vector<BRect> >
 PDFEngine::_FindString(BString const& name, int const& pageNumber)
 {
@@ -223,7 +234,6 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     	return unique_ptr<BBitmap>(bitmap);
 	}
 	
-	
 	fz_page *page;
 	fz_display_list *list = nullptr;
 	fz_device *dev = nullptr;
@@ -237,11 +247,10 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     } fz_catch(fContext) {
     	pthread_mutex_unlock(&gRendermutex);
     	stop = true;
-    	bitmap = new BBitmap(BRect(0, 0, width, height), B_RGBA32);
     }
     
     if (stop)
-    	return unique_ptr<BBitmap>(bitmap);
+    	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
 	
 	fz_try(fContext) {
     	list = fz_new_display_list(fContext);
@@ -253,19 +262,18 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     	fz_free_page(fDocument, page);
     	pthread_mutex_unlock(&gRendermutex);
     	stop = true;
-    	bitmap = new BBitmap(BRect(0, 0, width, height), B_RGBA32);
 	}
 	
 	if (stop)
-    	return unique_ptr<BBitmap>(bitmap);
+    	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
     	
 	fz_free_device(dev);
 	dev = nullptr;
 
-    fz_matrix ctm;
+    fz_matrix ctm = fz_identity;
     fz_rect bbox;
     
-	fz_pixmap* image = static_cast<fz_pixmap*>(nullptr);
+	fz_pixmap* image = nullptr;
 	fz_var(image);
 	
 	fz_rect bounds;
@@ -278,7 +286,7 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	} else {
 		zoomFactor = width / (bounds.x1 - bounds.x0);
 	}
-	
+
   	fz_scale(&ctm, zoomFactor, zoomFactor);
     fz_rotate(&ctm, fRotation);
     fz_transform_rect(&bounds, &ctm);
@@ -306,11 +314,10 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 		fz_free_page(fDocument, page);
 		pthread_mutex_unlock(&gRendermutex);
     	stop = true;
-    	bitmap = new BBitmap(BRect(0, 0, width, height), B_RGBA32);
 	}
 	
 	if (stop)
-    	return unique_ptr<BBitmap>(bitmap);
+    	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
     	
     fz_flush_warnings(fContext);
     
@@ -333,103 +340,9 @@ std::pair<BBitmap*, bool>
 PDFEngine::_RenderBitmap(int const& pageNumber)
 {
 	pthread_mutex_lock(&gRendermutex);
-		
-    if (pageNumber < 0 || pageNumber >= fPages)
-    	return std::pair<BBitmap*, bool>(new BBitmap(fDefaultRect, B_RGBA32), false);
-
-	fz_page* page;
-	fz_display_list* list = nullptr;
-	fz_device* dev = nullptr;
-	
-	fz_var(list);
-	fz_var(dev);
-	
-
-    bool stop = false;	// variable for avoiding return in fz_catch
-    fz_try(fContext) {
-		page = fz_load_page(fDocument, pageNumber);
-    } fz_catch(fContext) {
-    	pthread_mutex_unlock(&gRendermutex);
-    	stop = true;
-    }
-    
-    if (stop)
-    	return std::pair<BBitmap*, bool>(new BBitmap(fDefaultRect, B_RGBA32), false);
-	
-	fz_try(fContext) {
-    	list = fz_new_display_list(fContext);
-    	dev = fz_new_list_device(fContext, list);
-    	fz_run_page(fDocument, page, dev, &fz_identity, nullptr);
-	} fz_catch(fContext) {
-    	fz_free_device(dev);
-    	fz_drop_display_list(fContext, list);
-    	fz_free_page(fDocument, page);
-    	pthread_mutex_unlock(&gRendermutex);
-    	stop = true;
-	}
-	
-	if (stop)
-    	return std::pair<BBitmap*, bool>(new BBitmap(fDefaultRect, B_RGBA32), false);
-	
-	fz_free_device(dev);
-	dev = nullptr;
-
-    fz_matrix ctm;
-    fz_irect bbox;
-    
-	fz_pixmap* image = nullptr;
-	fz_var(image);
-	
-	fz_rect bounds;
-	fz_bound_page(fDocument, page, &bounds);
-	
-   	fz_scale(&ctm, fZoomFactor, fZoomFactor);
-    fz_rotate(&ctm, fRotation);
-    fz_transform_rect(&bounds, &ctm);
-    fz_irect pageBox;
-	fz_round_rect(&pageBox, &bounds);
-	
-	fz_try(fContext) {
-    	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, &pageBox);
-    	
-    	//save alpha
-    	//fz_clear_pixmap(fContext, image); 
-    	fz_clear_pixmap_with_value(fContext, image, 255);
-    	dev = fz_new_draw_device(fContext, image);
-    	if (list)
-    		fz_run_display_list(list, dev, &ctm, &bounds, nullptr);
-   		 else
-   	 		fz_run_page(fDocument, page, dev, &ctm, nullptr);
-    	
-    	fz_free_device(dev);
-    	dev = nullptr;
-    	//fz_unmultiply_pixmap(fContext, image);
-	} fz_catch(fContext) {
-		fz_free_device(dev);
-		fz_drop_pixmap(fContext, image);
-    	fz_drop_display_list(fContext, list);
-		fz_free_page(fDocument, page);
-		pthread_mutex_unlock(&gRendermutex);
-    	stop = true;
-	}
-	
-	if (stop)
-    	return std::pair<BBitmap*, bool>(new BBitmap(fDefaultRect, B_RGBA32), false);
-	
-    fz_flush_warnings(fContext);
-    
-    int imageWidth  = pageBox.x1 - pageBox.x0;
-    int imageHeight = pageBox.y1 - pageBox.y0;
-    
-    BBitmap* bitmap = new BBitmap(BRect(0, 0, imageWidth - 1, imageHeight - 1), B_RGBA32);
-   	bitmap->SetBits(fz_pixmap_samples(fContext, image),
-   		imageWidth * imageHeight * fz_pixmap_components(fContext, image), 0, B_RGBA32);
-    
-    fz_free_device(dev);
-	fz_drop_pixmap(fContext, image);
-    fz_drop_display_list(fContext, list);
-	fz_free_page(fDocument, page);
+	unique_ptr<BBitmap> bitmap = RenderBitmap(pageNumber, fDefaultRect.Width(),
+		fDefaultRect.Height(), 0);
 	pthread_mutex_unlock(&gRendermutex);
     
-    return std::pair<BBitmap*, bool>(bitmap, false);
+    return std::pair<BBitmap*, bool>(bitmap.release(), false);
 }

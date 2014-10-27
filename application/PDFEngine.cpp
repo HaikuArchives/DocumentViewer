@@ -138,7 +138,7 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
 {
 	vector<BString> contextVec;
 	vector<BRect>	rectVec;
-#if 0
+
 	bool needWholeWord = false;
     if (GHasFlag(fSearchFlag, SEARCH_WHOLE_WORD))
     	needWholeWord = true;
@@ -146,7 +146,6 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
     bool needMatchCase = false;
     if (GHasFlag(fSearchFlag, SEARCH_MATCH_CASE))
     	needMatchCase = true;
-#endif
 
     fz_page* page = nullptr;
     page = fz_load_page(fDocument, pageNumber);
@@ -180,11 +179,29 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
 			br.bottom = fr.y1;
 			br.left = fr.x0;
 			br.right = fr.x1;
-			printf("FOUND %f %f %f %f\n", br.left, br.top, br.right, br.bottom);
+
+			// Get some context: extract some text around the match by enlarging
+			// the rect to cover a greater part of the text
+			fr.x0 -= 1000;
+			fr.x1 += 1000;
+
+			BString context(fz_copy_selection(fContext, text, fr));
+			int pos = context.FindFirst(name);
+
+			// Check that we get a case match if requested
+			if (needMatchCase && pos < 0)
+				continue;
+
+			// Filter out non-whole word results
+			if (needWholeWord) {
+				if (pos > 0 && isalpha(context[pos - 1]))
+					continue;
+				if (isalpha(context[pos + name.Length()]))
+					continue;
+			}
+
 			rectVec.push_back(br);
-			// TODO we need to extract the "context" for the search results (a
-			// line of text or so)
-			contextVec.push_back(name);
+			contextVec.push_back(context);
 		}
 
 	

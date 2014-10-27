@@ -69,9 +69,6 @@ private:
 	
     ImageTabView*           fTabView1;
 
-    std::vector<ImageTab*>  fTabsVec1;
-    
-
     DocumentView*           fDocumentView;
     OutlineView*            fOutlineView;
     PreviewView*            fPreviewView;

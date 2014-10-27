@@ -192,11 +192,12 @@ BaseEngine::SetZoom(float zoomFactor)
 {
     if (fZoomFactor == zoomFactor)
         return;
-    
+
     fZoomFactor = zoomFactor;
     fDefaultRect.right 	= 300 * fZoomFactor;
     fDefaultRect.bottom = 500 * fZoomFactor;
-     
+
+	// Mark all existing bitmap as dirty as they need to be rendered again.
     for (int i = 0; i < fPages; ++i)
         if (fBitmap[i].first != nullptr)
             fBitmap[i].second = true;

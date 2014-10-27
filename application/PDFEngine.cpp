@@ -142,56 +142,56 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
 	bool needWholeWord = false;
     if (GHasFlag(fSearchFlag, SEARCH_WHOLE_WORD))
     	needWholeWord = true;
-    	
+
     bool needMatchCase = false;
     if (GHasFlag(fSearchFlag, SEARCH_MATCH_CASE))
     	needMatchCase = true;
-    
-    fz_text_sheet* sheet = fz_new_text_sheet(fContext);
+#endif
+
     fz_page* page = nullptr;
     page = fz_load_page(fDocument, pageNumber);
+
+    fz_text_sheet* sheet = fz_new_text_sheet(fContext);
 	
 	fz_device* dev = nullptr;
 	fz_var(dev);
 	
-#endif
 	fz_text_page* text = nullptr;
 	fz_var(text);
 	
 	fz_try(fContext) {
 		text = fz_new_text_page(fContext);
-		int boxCount = fz_search_text_page(fContext, text, name, NULL, 0);
-		fz_rect boxes[boxCount];
-		int count = fz_search_text_page(fContext, text, name, boxes, boxCount);
+		dev = fz_new_text_device(fContext, sheet, text);
 
-		for(fz_rect fr: boxes) {
+		// Load the text from the page
+		fz_run_page(fDocument, page, dev, &fz_identity, NULL);
+		fz_free_device(dev);
+		dev = nullptr;
+
+		// Now actually get the boxes
+		static const int MAX_SEARCHES = 500;
+		fz_rect boxes[MAX_SEARCHES];
+		int count = fz_search_text_page(fContext, text, name, boxes, MAX_SEARCHES);
+
+		for(int i = 0; i < count; i++) {
+			fz_rect fr = boxes[i];
 			BRect br;
 			br.top = fr.y0;
 			br.bottom = fr.y1;
 			br.left = fr.x0;
 			br.right = fr.x1;
+			printf("FOUND %f %f %f %f\n", br.left, br.top, br.right, br.bottom);
 			rectVec.push_back(br);
 			// TODO we need to extract the "context" for the search results (a
 			// line of text or so)
 			contextVec.push_back(name);
 		}
 
-
-#if 0
-		dev = fz_new_text_device(fContext, sheet, text);
-		fz_run_page(fDocument, page, dev, &fz_identity, nullptr);	
-		fz_free_device(dev);
-		dev = nullptr;
-#endif
 	
 	} fz_catch(fContext) {
-#if 0
 		fz_free_device(dev);
-#endif
 		fz_free_text_page(fContext, text);
-#if 0
-		fz_free_page(fDocument, page);
-#endif
+		fz_free_text_sheet(fContext, sheet);
 		fz_rethrow(fContext);
 	}
 		
@@ -228,10 +228,8 @@ unique_ptr<BBitmap>
 PDFEngine::RenderBitmap(int const& pageNumber,
 	int const& width, int const& height, int const& rotation)
 {
-	BBitmap* bitmap = nullptr;
-		
 	if (pageNumber < 0 || pageNumber >= fPages) {
-    	return unique_ptr<BBitmap>(bitmap);
+    	return unique_ptr<BBitmap>(nullptr);
 	}
 	
 	fz_page *page;
@@ -287,14 +285,13 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 		zoomFactor = width / (bounds.x1 - bounds.x0);
 	}
 
-  	fz_scale(&ctm, zoomFactor, zoomFactor);
     fz_rotate(&ctm, fRotation);
-    fz_transform_rect(&bounds, &ctm);
-    fz_irect pageBox;
-	fz_round_rect(&pageBox, &bounds);
+  	fz_pre_scale(&ctm, zoomFactor, zoomFactor);
+    fz_irect storage;
+	fz_irect* pageBox = fz_round_rect(&storage, fz_transform_rect(&bounds, &ctm));
 	
 	fz_try(fContext) {
-    	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, &pageBox);
+    	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, pageBox);
     	
     	//save alpha
     	//fz_clear_pixmap(fContext, image); 
@@ -321,10 +318,11 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     	
     fz_flush_warnings(fContext);
     
-    int imageWidth = pageBox.x1 - pageBox.x0;
-    int imageHeight = pageBox.y1 - pageBox.y0;
+    int imageWidth = pageBox->x1 - pageBox->x0;
+    int imageHeight = pageBox->y1 - pageBox->y0;
 
-    bitmap = new BBitmap(BRect(0, 0, imageWidth - 1, imageHeight - 1), B_RGBA32);
+
+    BBitmap* bitmap = new BBitmap(BRect(0, 0, imageWidth - 1, imageHeight - 1), B_RGBA32);
     bitmap->SetBits(fz_pixmap_samples(fContext, image),
     	imageWidth * imageHeight * fz_pixmap_components(fContext, image), 0, B_RGBA32);
     

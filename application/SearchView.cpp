@@ -51,7 +51,7 @@ SearchListView::Clear(void)
 
 SearchView::SearchView(void)
 	:
-    BGroupView("search_view", B_VERTICAL, 0)
+    BGroupView("find", B_VERTICAL, 0)
 {
 	fSearchTC   = new BTextControl("", "", new BMessage(M_TEXT_CHANGED));
 	fStartButton = new BButton("Start", new BMessage(M_START));

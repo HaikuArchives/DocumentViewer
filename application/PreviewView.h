@@ -36,8 +36,6 @@ public:
     virtual	void	MouseMoved(BPoint where, uint32 code,
                         const BMessage* dragMessage);
     virtual	void	ScrollTo(BPoint where);
-    virtual void    AllAttached(void);
-    virtual void    Pulse(void);
 
             void    SetFile(BString file, BString fileType, BString& password);
             void    SetColumnWidth(const int32& width);
@@ -84,7 +82,6 @@ private:
     int                 			fHighlightPageNumber;
     bool                			fIsPanning;
     int                 			fScrollToCurrentPage;
-    int                 			fAdaptCache;
 
     Debug               			out;
 };

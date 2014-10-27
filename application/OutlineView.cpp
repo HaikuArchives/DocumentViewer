@@ -308,7 +308,7 @@ OutlineListView::InitiateDrag(BPoint point, int32 itemIndex, bool initialySelect
 
 OutlineView::OutlineView(void)
 	:
-    BGroupView("outline_view", B_VERTICAL, 0)
+    BGroupView("outline", B_VERTICAL, 0)
 {   
 	const float iconHeight = 30;    
   	fDeleteItem = new ImageButton("quit",

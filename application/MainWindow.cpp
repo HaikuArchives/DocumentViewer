@@ -47,58 +47,51 @@ MainWindow::MainWindow(void)
 {
 	fTabView1 = new ImageTabView("tab_view1");
 
-    fTabsVec1.push_back(new ImageTab());
-    fPreviewView = new PreviewView();
-	fTabView1->AddTab(fPreviewView, fTabsVec1.back());
-	fTabsVec1.back()->SetLabel("preview");
+	fPreviewView = new PreviewView();
+	fTabView1->AddTab(fPreviewView, new ImageTab());
 
-    fTabsVec1.push_back(new ImageTab());
-    fOutlineView = new OutlineView();
-	fTabView1->AddTab(fOutlineView, fTabsVec1.back());
-	fTabsVec1.back()->SetLabel("outline");
+	fOutlineView = new OutlineView();
+	fTabView1->AddTab(fOutlineView, new ImageTab());
 
-    fTabsVec1.push_back(new ImageTab());
-    fSearchView = new SearchView();
-	fTabView1->AddTab(fSearchView, fTabsVec1.back());
-	fTabsVec1.back()->SetLabel("find");
+	fSearchView = new SearchView();
+	fTabView1->AddTab(fSearchView, new ImageTab());
 
-    fTabView1->Select(0);
-    fDocumentView = new DocumentView("", "", fPassword);
-    fRibbon = new MainWindowRB();
+	fTabView1->Select(0);
+	fDocumentView = new DocumentView("", "", fPassword);
+	fRibbon = new MainWindowRB();
 
-    fDocumentLayout = BLayoutBuilder::Group<>(B_VERTICAL, 0)
-        .AddSplit(B_HORIZONTAL, 0, 7).GetSplitView(&fSplitView1)
-            .AddGroup(B_VERTICAL, 0, 1)
-                .Add(fTabView1)
-            .End()
-            .AddSplit(B_VERTICAL, 0, 6).GetSplitView(&fSplitView2)
-                .Add(fRibbon, 1)
-                .AddGroup(B_VERTICAL, 0, 6)
-                    .Add(fDocumentView)
-                .End()
-            .End()
-        .End()
-    ;
+	fDocumentLayout = BLayoutBuilder::Group<>(B_VERTICAL, 0)
+		.AddSplit(B_HORIZONTAL, 0, 7).GetSplitView(&fSplitView1)
+			.AddGroup(B_VERTICAL, 0, 1)
+				.Add(fTabView1)
+			.End()
+			.AddSplit(B_VERTICAL, 0, 6).GetSplitView(&fSplitView2)
+				.Add(fRibbon, 1)
+				.AddGroup(B_VERTICAL, 0, 6)
+					.Add(fDocumentView)
+				.End()
+			.End()
+		.End()
+	;
 
+	fImageSpinner = new ImageSpinner();
 
-   	fImageSpinner = new ImageSpinner();
-   	
-  	fIntroLayout = BLayoutBuilder::Group<>(B_VERTICAL, 0)
-        .Add(fImageSpinner)
-        .AddGlue(0)
-    ;
-       
-   	fCardLayout = new BCardLayout();
-   	
-  	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
-        .Add(fCardLayout)
-    ;
+	fIntroLayout = BLayoutBuilder::Group<>(B_VERTICAL, 0)
+		.Add(fImageSpinner)
+		.AddGlue(0)
+	;
 
-    fCardLayout->AddItem(fIntroLayout);
-   	fCardLayout->AddItem(fDocumentLayout);
-    fCardLayout->SetVisibleItem(fIntroLayout);
-    _LoadSettings();
-    Show();
+	fCardLayout = new BCardLayout();
+
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
+		.Add(fCardLayout)
+		;
+
+	fCardLayout->AddItem(fIntroLayout);
+	fCardLayout->AddItem(fDocumentLayout);
+	fCardLayout->SetVisibleItem(fIntroLayout);
+	_LoadSettings();
+	Show();
 }
 
 

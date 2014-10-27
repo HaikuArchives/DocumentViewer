@@ -19,10 +19,11 @@
 
 PreviewView::PreviewView(void)
 	:
-    BGroupView("preview_view", B_VERTICAL, 0)
-{	
+	BGroupView("preview", B_VERTICAL, 0)
+{
+	SetFlags(Flags() | B_WILL_DRAW);
     fColumnOption = new BOptionPopUp("column_option", "",
-                        new BMessage(M_COLUMN_WIDTH));
+        new BMessage(M_COLUMN_WIDTH));
     fColumnOption->AddOptionAt("Fit Width", FIT_WIDTH, 0);
     fColumnOption->AddOptionAt("Small Width", SMALL_COLUMN, 1);
     fColumnOption->AddOptionAt("Medium Width", MEDIUM_COLUMN, 2);
@@ -30,8 +31,8 @@ PreviewView::PreviewView(void)
 
     fBasicPreviewView = new BasicPreviewView();
 
-    fVScrollBar = new BScrollBar("v_scrollbar",
-                    fBasicPreviewView, 0, 10000, B_VERTICAL);
+    fVScrollBar = new BScrollBar("v_scrollbar", fBasicPreviewView, 0, 10000,
+		B_VERTICAL);
 
     BLayoutBuilder::Group<>(this)
         .AddGroup(B_HORIZONTAL, 0)
@@ -50,6 +51,7 @@ PreviewView::PreviewView(void)
 void
 PreviewView::AttachedToWindow(void)
 {
+	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
     fColumnOption->SetTarget(this);
 }
 
@@ -68,6 +70,7 @@ PreviewView::Show(void)
 void
 PreviewView::MessageReceived(BMessage* message)
 {
+	message->PrintToStream();
 	switch (message->what) {
         case M_COLUMN_WIDTH:
         {
@@ -118,18 +121,9 @@ BasicPreviewView::BasicPreviewView(void)
     fCurrentPageNumber(0),
     fHighlightPageNumber(0),
     fIsPanning(false),
-    fScrollToCurrentPage(0),
-    fAdaptCache(false)
+    fScrollToCurrentPage(0)
 {
-    SetFlags(Flags() | B_PULSE_NEEDED);
-
     fEngine = nullptr;
-
-    SetViewColor(B_TRANSPARENT_32_BIT);
-    SetDrawingMode(B_OP_ALPHA);
-    //SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
-
-    Invalidate();
 }
 
 
@@ -179,33 +173,23 @@ BasicPreviewView::KeyDown(const char* bytes, int32 numBytes)
 
 
 void
-BasicPreviewView::AllAttached(void)
-{
-    Window()->SetPulseRate(1E6);
-    BView::AllAttached();
-}
-
-
-void
 BasicPreviewView::Draw(BRect updateRect)
 {	
-   	BRect bounds = Bounds();
-    SetHighColor(ui_color(B_PANEL_BACKGROUND_COLOR));
-    FillRect(bounds);
-    
-    if (fEngine == nullptr) {
-    	BView::Draw(updateRect);
-    	return;
-    }
-    
-    SetHighColor(0, 0, 0, 255);
-    BPoint where(0, 0);
+	BRect bounds = Bounds();
 
-    if (fColumnWidth > 0 && fColumnWidth < bounds.Width()) {
-        fRows = ceil(static_cast<float>(_Pages()) / fColumns);
-        _SetColumns((Bounds().Width() - 2*fHMargin + fHSpace) / (fColumnWidth + fHSpace));
+	if (fEngine == nullptr) {
+		BView::Draw(updateRect);
+		return;
+	}
 
-        fPageHeight = _PageHeight();
+	SetHighColor(0, 0, 0, 255);
+	BPoint where(0, 0);
+
+	if (fColumnWidth > 0 && fColumnWidth < bounds.Width()) {
+		fRows = ceil(static_cast<float>(_Pages()) / fColumns);
+		_SetColumns((Bounds().Width() - 2*fHMargin + fHSpace) / (fColumnWidth + fHSpace));
+
+		fPageHeight = _PageHeight();
         int lowerbound = fCurrentPageNumber;
         int upperbound = 2 + (bounds.Height() -fVSpace) / (fPageHeight + fVSpace);
         upperbound *= fColumns;
@@ -254,41 +238,31 @@ BasicPreviewView::Draw(BRect updateRect)
         if (upperbound > fEngine->PageCount())
             upperbound = fEngine->PageCount();
 
-        if (fScrollToCurrentPage == 0)
-            where.y = fVMargin + fCurrentRow * (fPageHeight + fVSpace);
-        else
-            where.y = ScrollBar(B_VERTICAL)->Value();
+		where.y = fVMargin + fCurrentRow * (fPageHeight + fVSpace);
 		
 		bool hasDrawn = false;
         for (int i = fCurrentPageNumber; i < upperbound; ++i) {
             fPageHeight = _PageHeight(i);
             BRect rect(0, 0, width, fPageHeight);
             rect.OffsetBySelf(where);
-            if (rect.Intersects(updateRect)) {
+            if (rect.Intersects(updateRect)){
             	hasDrawn = true;
                 DrawBitmapAsync(_Page(i), rect);
                 if (i == fHighlightPageNumber) {
                     SetHighColor(0, 0, 255, 255);
                     SetPenSize(2);
-                    StrokeRect(rect);
+                } else {
                     SetHighColor(0, 0, 0, 255);
                     SetPenSize(1);
-                } else {
-                    StrokeRect(rect);
                 }
+                StrokeRect(rect);
             } else if (hasDrawn) {
-            	break;	
+            	break;
             }
             where.y += (fPageHeight + fVSpace);
         }
-        fZoom =  width / fEngine->Page(upperbound - 1)->Bounds().Width();
+        fZoom =  width / (fZoom * fEngine->Page(upperbound - 1)->Bounds().Width());
     }
-    
-    if (fScrollToCurrentPage == 1)
-            ++fScrollToCurrentPage;
-
-    Sync();
-    BView::Draw(updateRect);
 }
 
 
@@ -299,8 +273,8 @@ BasicPreviewView::FrameResized(float newWidth, float newHeight)
     if (fEngine == nullptr)
         return;
 
-    fScrollToCurrentPage = 1;
-    fAdaptCache = true;
+    _ShowPage(fCurrentPageNumber);
+	_AdaptCache();
 }
 
 
@@ -499,28 +473,17 @@ BasicPreviewView::_Pages(void)
 }
 
 
+#if 0
 void
 BasicPreviewView::Pulse(void)
 {
-    if (fEngine == nullptr)
-        return;
-
     if (fZoom != 1) {
         fEngine->MultiplyZoom(fZoom);
         fZoom = 1;
         Invalidate();
     }
-
-    if (fAdaptCache) {
-        _AdaptCache();
-        fAdaptCache = false;
-    }
-
-    if (fScrollToCurrentPage == 2) {
-        fScrollToCurrentPage = 0;
-        _ShowPage(fCurrentPageNumber);
-    }
 }
+#endif
 
 
 inline void
@@ -582,7 +545,7 @@ BasicPreviewView::SetColumnWidth(const int32& width)
         if (fColumns < 1)
         	fColumns = 1;
         	
-        fAdaptCache = true;
+        _AdaptCache();
     }
     _ShowPage(page);
 }
@@ -635,7 +598,7 @@ BasicPreviewView::_SetColumns(const int& columns)
         return;
 
     fColumns = columns;
-    fAdaptCache = true;
+	_AdaptCache();
     _AdaptScrollBarRange();
 }
 

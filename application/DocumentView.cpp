@@ -51,7 +51,7 @@ DocumentView::MakeFocus(bool focus)
 	fBasicDocumentView->MakeFocus(true);
 }
 
-            
+
 const int&
 DocumentView::CurrentPageNumber(void)
 {
@@ -71,6 +71,7 @@ DocumentView::Cover(float const& height)
 {
 	return fBasicDocumentView->fEngine->RenderBitmap(0,0, height, 0);
 }
+
 
 void
 DocumentView::FileChanged(const BString& file, BString const& fileType,
@@ -309,10 +310,10 @@ BasicDocumentView::MessageReceived(BMessage* message)
         	
         	auto frame = _PageFrame(fEngine->Page(page), page);
         	
-        	rect.left 	*= frame.Width();
-        	rect.right 	*= frame.Width();
-        	rect.top 	*= frame.Height();
-        	rect.bottom *= frame.Height();
+        	rect.left 	*= fZoomFactor / 2;
+        	rect.right 	*= fZoomFactor / 2;
+        	rect.top 	*= fZoomFactor / 2;
+        	rect.bottom *= fZoomFactor / 2;
         	
         	rect.OffsetBy(frame.LeftTop());
         		
@@ -527,74 +528,69 @@ BasicDocumentView::KeyDown(const char* bytes, int32 numBytes)
 void
 BasicDocumentView::Draw(BRect updateRect)
 {
-	if (fIsPrinting) {
-		
-		return;	
-	}
-	
-    BRect bounds = Bounds();
+	if (fIsPrinting)
+		return;
 
-    SetHighColor(ui_color(B_PANEL_BACKGROUND_COLOR));
-    FillRect(bounds);
-    
-    if (fEngine == nullptr) {
+	BRect bounds = Bounds();
+
+	SetHighColor(ui_color(B_PANEL_BACKGROUND_COLOR));
+	FillRect(bounds);
+
+	if (fEngine == nullptr) {
 		BView::Draw(updateRect);
 		return;
 	}
-    
-    
-    SetHighColor(0, 0, 0, 255);
 
-    BBitmap* bitmap;
-    BPoint where(0, 0);
-    BRect frame;
-    
-    bitmap = fEngine->Page(fCurrentPageNumber);
 
-    int upperbound = bounds.Height() /
-        bitmap->Bounds().Height();
-    upperbound = upperbound + fCurrentPageNumber + 2;
-    if (upperbound > fEngine->PageCount())
-        upperbound = fEngine->PageCount();
-	
+	SetHighColor(0, 0, 0, 255);
+
+	BBitmap* bitmap;
+	BPoint where(0, 0);
+	BRect frame;
+
+	bitmap = fEngine->Page(fCurrentPageNumber);
+
+	int upperbound = bounds.Height() /
+		bitmap->Bounds().Height();
+	upperbound = upperbound + fCurrentPageNumber + 2;
+	if (upperbound > fEngine->PageCount())
+		upperbound = fEngine->PageCount();
+
 	bool hasDrawn = false;
-    for (int i = fCurrentPageNumber; i < upperbound; ++i) {
-    	bitmap = fEngine->Page(i); 		
-   		frame = _PageFrame(bitmap, i);
-   		
-        if (frame.Intersects(updateRect)) {
-        	hasDrawn = true;
-        	            
-            DrawBitmapAsync(bitmap, frame.LeftTop());
-        	StrokeRect(frame);
-        	
-        	if (i == get<0>(fHighlightRect)) {
-        		SetHighColor(0, 0, 255, 60);
-        		//SetHighColor(255, 255, 0, 80);
-        		FillRect(get<1>(fHighlightRect));
-        		SetHighColor(0, 0, 0, 255);
-        		StrokeRect(get<1>(fHighlightRect));
-        	}
-        } else if (hasDrawn) {
-        	break;	
-       	}
-    }
+	for (int i = fCurrentPageNumber; i < upperbound; ++i) {
+		bitmap = fEngine->Page(i);
+		frame = _PageFrame(bitmap, i);
 
-    Sync();
-    BView::Draw(updateRect);
+		if (frame.Intersects(updateRect)) {
+			hasDrawn = true;
+
+			DrawBitmapAsync(bitmap, frame.LeftTop());
+			StrokeRect(frame);
+
+			if (i == get<0>(fHighlightRect)) {
+				SetHighColor(0, 0, 255, 60);
+				//SetHighColor(255, 255, 0, 80);
+				FillRect(get<1>(fHighlightRect));
+				SetHighColor(0, 0, 0, 255);
+				StrokeRect(get<1>(fHighlightRect));
+			}
+		} else if (hasDrawn) {
+			break;
+		}
+	}
 }
 
 
 inline void
 BasicDocumentView::_SetScrollBarAtPage(int pageNumber)
 {
-    if (fEngine == nullptr)
-        return;
-        
-    BBitmap* bitmap = fEngine->Page(pageNumber);
+	if (fEngine == nullptr)
+		return;
 
-    _AdaptScrollBarRange();
-    ScrollBar(B_VERTICAL)->SetValue(bitmap->Bounds().Height() * pageNumber);
+	BBitmap* bitmap = fEngine->Page(pageNumber);
+
+	_AdaptScrollBarRange();
+	ScrollBar(B_VERTICAL)->SetValue(bitmap->Bounds().Height() * pageNumber);
 }
 
 
@@ -602,19 +598,19 @@ inline void
 BasicDocumentView::_AdaptCache(void)
 {
 	if (fEngine == nullptr)
-        return;
-        
-    BBitmap* bitmap = fEngine->Page(fCurrentPageNumber);
-        
-    int cache = 16;
+		return;
 
-    int size = abs(floor(cache * Bounds().Height() /
-        bitmap->Bounds().Height()));
+	BBitmap* bitmap = fEngine->Page(fCurrentPageNumber);
 
-    if (size > 50)
-        size  = 50;
+	int cache = 16;
 
-    fEngine->SetCacheSize(size, size);
+	int size = abs(floor(cache * Bounds().Height() /
+		bitmap->Bounds().Height()));
+
+	if (size > 50)
+		size  = 50;
+
+	fEngine->SetCacheSize(size, size);
 }
 
 

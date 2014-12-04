@@ -394,16 +394,6 @@ BasicImageSpinner::Add(BString const& filePath, std::unique_ptr<BBitmap>&& bitma
     path << idNumber;
     Tools::ExportBitmap(bitmap.get(), path);
     
-    // save path to RecentlyOpened,
-    // not really needed sice in destructor it's saved again
-    // but still useful for the case of a crash,
-    path = settingsPath;
-	path.Append("RecentlyOpened");
-	BFile file(path, B_WRITE_ONLY | B_CREATE_FILE | B_OPEN_AT_END);
-    BString str;
-    str << filePath << "\t" << idNumber << "\n";
-    file.Write(str, str.Length());
-    
     _Add(filePath, move(bitmap), idNumber);
 }
 
@@ -565,6 +555,7 @@ BasicImageSpinner::_SelectIndex(int const& index)
 void
 BasicImageSpinner::_SaveSettings(void)
 {
+#if 0 // This is known to crash DocumentViewer in some cases, see issue #2
 	BString settingsPath(Tools::SettingsPath());
 	BString path = settingsPath;
 	path.Append("RecentlyOpened");
@@ -576,12 +567,14 @@ BasicImageSpinner::_SaveSettings(void)
     	str << "\t" << get<2>(*it) << "\n";
     	file.Write(str, str.Length());
     }
+#endif
 }
 
 
 void
 BasicImageSpinner::_LoadSettings(void)
 {
+#if 0 // This is known to crash DocumentViewer in some cases, see issue #2
 	BString settingsPath = Tools::SettingsPath();
 	BString path = settingsPath;
 	path.Append("RecentlyOpened");
@@ -618,6 +611,7 @@ BasicImageSpinner::_LoadSettings(void)
   			
   		}				
   	}
+#endif
 }
 
 

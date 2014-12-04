@@ -21,7 +21,7 @@
 #include <Point.h>
 #include <Rect.h>
 
-#include <columnlistview/ColumnListView.h>
+#include <ColumnListView.h>
 #include "Debug.h"
 
 

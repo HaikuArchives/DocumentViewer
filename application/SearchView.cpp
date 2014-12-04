@@ -10,7 +10,7 @@
 
 #include <LayoutBuilder.h>
 
-#include <columnlistview/ColumnTypes.h>
+#include <ColumnTypes.h>
 #include "Flags.h"
 #include "Messages.h"
 

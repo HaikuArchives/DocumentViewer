@@ -1,4 +1,0 @@
-SubDir TOP ;
-
-SubInclude TOP application ;
-SubInclude TOP libs ;

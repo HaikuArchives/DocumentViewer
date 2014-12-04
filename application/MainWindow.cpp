@@ -97,7 +97,7 @@ MainWindow::MainWindow(void)
 
 void
 MainWindow::MessageReceived(BMessage* message)
-{	
+{
 	switch (message->what) {
 		case MSG_NO_FIT:
 		case MSG_NO_ZOOM:
@@ -116,7 +116,7 @@ MainWindow::MessageReceived(BMessage* message)
             fPreviewView->SelectPage(pageNumber);
             break;
         }
-		
+
         case MSG_GOTO_PAGE:
         {
             PostMessage(message, fDocumentView);
@@ -153,45 +153,45 @@ MainWindow::MessageReceived(BMessage* message)
 			//be_app->PostMessage(B_QUIT_REQUESTED);
 			break;
         }
-        
+
         case MSG_HELP:
-        {	
-        	char const* args[] = {"http://haiku.bplaced.net/DocumentViewer/help.html", 0};
+        {
+        	char const* args[] = {"http://haikuarchives.github.io/DocumentViewer/help.html", 0};
         	be_roster->Launch("text/html", 1, args);
         	break;
         }
-        
-        
+
+
         case MSG_HIGHLIGHT_RECT:
         	PostMessage(message, fDocumentView);
         	break;
-        
+
         case MSG_SUPPORT:
-        {	
-        	char const* args[] = {"http://haiku.bplaced.net/DocumentViewer/support.html", 0};
+        {
+        	char const* args[] = {"http://haikuarchives.github.io/DocumentViewer/support.html", 0};
         	be_roster->Launch("text/html", 1, args);
         	break;
         }
-        
+
         case MSG_PRINT_DOCUMENT:
-        {	
+        {
         	fDocumentView->Print();
         	break;
         }
-        
-        
+
+
         case MSG_SETUP_PRINTER:
         {
         	BPrintJob job("document's name");
-        	job.ConfigPage();	
+        	job.ConfigPage();
         	break;
         }
-        
+
         case MSG_OPEN_FILE_PANEL:
         case M_OPEN_FILE_PANEL:
         	((MainApplication*)be_app)->OpenFilePanel();
         	break;
-        	
+
         case MSG_OPEN_FILE:
         {
         	BString file;
@@ -204,11 +204,11 @@ MainWindow::MessageReceived(BMessage* message)
     		_OpenFile(file, type, password, page);
         	break;
         }
-        	
+
         case M_SHOW_DOCUMENT:
         	fCardLayout->SetVisibleItem((BLayoutItem*)fDocumentLayout);
         	break;
-        	
+
 
 		default:
 			BWindow::MessageReceived(message);
@@ -231,17 +231,17 @@ MainWindow::_FileType(BString const& file)
 	while (true) {
    		if (msg.FindString("extensions", i++, &type) != B_OK)
   			break;
-  			   		
+
    		if (type == "djvu" || type == "pdf")
    			break;
 	}
-	
+
 	// hack, delte later, after types are added to haiku
 	if (type == "") {
 		if (file.IFindLast("djvu") != B_ERROR)
-			type = "djvu";	
+			type = "djvu";
 	}
-		
+
 	return type;
 }
 
@@ -256,21 +256,21 @@ MainWindow::_OpenFile(BString const& path, BString const& fileType,
     	fPreviewView->FileChanged(path, fileType, password);
     } catch(...) {
     	fCardLayout->SetVisibleItem((BLayoutItem*)fIntroLayout);
-  		return;	
+  		return;
     }
     fOutlineView->EngineChanged(fPreviewView->Engine());
     fSearchView->EngineChanged(fPreviewView->Engine());
     fRibbon->SetDocumentPages(fDocumentView->PageCount());
-    
+
     if (fImageSpinner->NeedsFile(path)) {
     	auto height = fImageSpinner->PreferredImageHeight();
     	fImageSpinner->Add(path, move(fDocumentView->Cover(height)));
     }
-    
+
     BMessage msg(MSG_GOTO_PAGE);
     msg.AddInt32("info", page);
     PostMessage(&msg);
-    
+
     fCardLayout->SetVisibleItem((BLayoutItem*)fDocumentLayout);
     fDocumentView->MakeFocus(true);
 }
@@ -292,7 +292,7 @@ MainWindow::_AddDocumentLayout
                 .End()
             .End()
         .End()
-    ;	
+    ;
 }
 
 */
@@ -304,9 +304,9 @@ MainWindow::_SaveSettings(void)
         fSavedFrame = Frame();
 
     Settings settings("MainWindow");
-    
+
     settings << "SavedFrame"     << fSavedFrame;
-    
+
     if (fDocumentLayout != nullptr) {
     	settings
         	<< "Split10"        << fSplitView1->ItemWeight((int32)0)
@@ -334,29 +334,29 @@ MainWindow::_LoadSettings()
         MoveTo(fSavedFrame.left, fSavedFrame.top);
         ResizeTo(fSavedFrame.Width(), fSavedFrame.Height());
     }
-    
+
     if (fDocumentLayout == nullptr)
     	return;
 
     float weight;
     weight = 1.0;
-    settings << "Split10" >> weight;   	
+    settings << "Split10" >> weight;
     fSplitView1->SetItemWeight(0, weight, true);
     if (weight == 0)
     	fSplitView1->SetItemCollapsed(0, false);
-    
+
     weight = 5.0;
     settings << "Split11" >> weight;
     fSplitView1->SetItemWeight(1, weight, true);
     if (weight == 0)
     	fSplitView1->SetItemCollapsed(1, false);
-    	
+
     weight = 1.0;
     settings << "Split20" >> weight;
     fSplitView2->SetItemWeight(0, weight, true);
     if (weight == 0)
     	fSplitView2->SetItemCollapsed(0, false);
-    	
+
     weight = 6.0;
     settings << "Split21" >> weight;
     fSplitView2->SetItemWeight(1, weight, true);

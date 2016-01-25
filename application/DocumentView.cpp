@@ -604,7 +604,7 @@ BasicDocumentView::_AdaptCache(void)
 
 	int cache = 16;
 
-	int size = abs(floor(cache * Bounds().Height() /
+	int size = fabs(floor(cache * Bounds().Height() /
 		bitmap->Bounds().Height()));
 
 	if (size > 50)

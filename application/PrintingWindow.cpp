@@ -9,6 +9,7 @@
 #include "PrintingWindow.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 
 #include <Application.h>

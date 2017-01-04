@@ -156,7 +156,7 @@ MainWindow::MessageReceived(BMessage* message)
 
         case MSG_HELP:
         {
-        	char const* args[] = {"http://haikuarchives.github.io/DocumentViewer/help.html", 0};
+        	char const* args[] = {"https://github.com/HaikuArchives/DocumentViewer/blob/master/help.pdf", 0};
         	be_roster->Launch("text/html", 1, args);
         	break;
         }

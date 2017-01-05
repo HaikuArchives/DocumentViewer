@@ -220,8 +220,11 @@ MainWindow::MessageReceived(BMessage* message)
 BString
 MainWindow::_FileType(BString const& file)
 {
+	entry_ref ref;
+	BEntry(file).GetRef(&ref);
+	
 	BMimeType mime;
-    BMimeType::GuessMimeType(file, &mime);
+    BMimeType::GuessMimeType(&ref, &mime);
     BMessage msg;
 	uint32 i=0;
 	char *ptr;

@@ -157,12 +157,12 @@ MainWindow::MessageReceived(BMessage* message)
         case MSG_HELP:
         {
         	BPathFinder pathFinder;
-			BPath path;
-			
-			pathFinder.FindPath(B_FIND_PATH_DOCUMENTATION_DIRECTORY,
-				"packages/documentviewer/help.pdf", path, B_FIND_PATH_EXISTING_ONLY);
-				
-			_OpenFile(path.Path(), "pdf", "", 0);
+		BPath path;
+		
+		pathFinder.FindPath(B_FIND_PATH_DOCUMENTATION_DIRECTORY,
+		"packages/documentviewer/help.pdf", path, B_FIND_PATH_EXISTING_ONLY);
+		
+		_OpenFile(path.Path(), "pdf", "", 0);
         	break;
         }
 

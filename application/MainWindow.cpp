@@ -156,8 +156,13 @@ MainWindow::MessageReceived(BMessage* message)
 
         case MSG_HELP:
         {
-        	char const* args[] = {"http://haikuarchives.github.io/DocumentViewer/help.html", 0};
-        	be_roster->Launch("text/html", 1, args);
+        	BPathFinder pathFinder;
+		BPath path;
+		
+		pathFinder.FindPath(B_FIND_PATH_DOCUMENTATION_DIRECTORY,
+		"packages/documentviewer/help.pdf", path, B_FIND_PATH_EXISTING_ONLY);
+		
+		_OpenFile(path.Path(), "pdf", "", 0);
         	break;
         }
 

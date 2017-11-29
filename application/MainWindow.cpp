@@ -21,6 +21,7 @@
 #include <Mime.h>
 #include <MimeType.h>
 #include <Path.h>
+#include <PathFinder.h>
 #include <PrintJob.h>
 #include <Screen.h>
 #include <SeparatorView.h>
@@ -160,7 +161,7 @@ MainWindow::MessageReceived(BMessage* message)
 		BPath path;
 		
 		pathFinder.FindPath(B_FIND_PATH_DOCUMENTATION_DIRECTORY,
-		"packages/documentviewer/help.pdf", path, B_FIND_PATH_EXISTING_ONLY);
+		"packages/documentviewer/help.pdf", B_FIND_PATH_EXISTING_ONLY, path);
 		
 		_OpenFile(path.Path(), "pdf", "", 0);
         	break;

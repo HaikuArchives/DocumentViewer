@@ -1,9 +1,9 @@
-![DocumentViewer icon](images/DocumentViewer_icon.png)DocumentViewer
+![DocumentViewer icon](DocumentViewer_icon.png)DocumentViewer
 =
 
 DocumentViewer is a viewer supporting PDF and DJVU files. 
 It provides many features , making it easy to open and view documents.<br>
-![DocumentViewer opened](images/DocumentViewer.png)
+![DocumentViewer opened](DocumentViewer.png)
  
  Features include:
   * Opening a file dialog to load a document

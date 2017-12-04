@@ -1,9 +1,9 @@
-![DocumentViewer icon](http://i68.tinypic.com/2rpxv87.png)DocumentViewer
+![DocumentViewer icon](images/DocumentViewer_icon.png)DocumentViewer
 =
 
 DocumentViewer is a viewer supporting PDF and DJVU files. 
-Many features are present, making it easier to open and view documents.
- Features avaliable:
+It provides many features , making it easy to open and view documents.
+ Features include:
   * Opening a file dialog to load a document
   * Print document
   * View panel
@@ -14,4 +14,4 @@ Many features are present, making it easier to open and view documents.
   * Home panel giving access to other feature
   * Options for help or to the website
 
-![DocumentViewer opened](http://i65.tinypic.com/2dmgtxg.png)
+![DocumentViewer opened](images/DocumentViewer.png)

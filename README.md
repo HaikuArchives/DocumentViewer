@@ -12,6 +12,6 @@ Many features are present, making it easier to open and view documents.
   * Shows thumbnail
   * Find text
   * Home panel giving access to other feature
-  * Options to help or the website
+  * Options for help or to the website
 
 ![DocumentViewer opened](http://i65.tinypic.com/2dmgtxg.png)

@@ -1,4 +1,4 @@
-![DocumentViewer icon](DocumentViewer_icon.png)DocumentViewer
+DocumentViewer
 =
 
 DocumentViewer is a viewer supporting PDF and DJVU files. 

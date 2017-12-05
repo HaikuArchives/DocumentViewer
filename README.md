@@ -2,7 +2,7 @@
 =
 
 DocumentViewer is a viewer supporting PDF and DJVU files. 
-It provides many features , making it easy to open and view documents.<br>
+It provides many features, making it easy to open and view documents.<br>
 
 <img src="DocumentViewerScreenshot.png" height="360" width="480">
  

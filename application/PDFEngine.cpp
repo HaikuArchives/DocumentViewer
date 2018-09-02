@@ -22,6 +22,31 @@ using namespace std;
 
 pthread_mutex_t	PDFEngine::gRendermutex;
 
+
+struct fz_lock_impl {
+	fz_locks_context context;
+
+	fz_lock_impl() {
+		for (int i = 0; i < FZ_LOCK_MAX; i++)
+			locks[i] = PTHREAD_MUTEX_INITIALIZER;
+
+		context.user = this;
+		context.lock = lock;
+		context.unlock = unlock;
+	}
+
+	static void lock(void* user, int lock) {
+		pthread_mutex_lock(&((fz_lock_impl*)user)->locks[lock]);
+	}
+	static void unlock(void* user, int lock) {
+		pthread_mutex_unlock(&((fz_lock_impl*)user)->locks[lock]);
+	}
+
+private:
+	pthread_mutex_t locks[FZ_LOCK_MAX];
+};
+
+
 PDFEngine::PDFEngine(BString fileName, BString& password)
     :
     fFileName(fileName),
@@ -30,8 +55,9 @@ PDFEngine::PDFEngine(BString fileName, BString& password)
 	fHighlightUnderText = true;
     fDocument = nullptr;
     fz_var(fDocument);
-   // fz_accelerate();
-    fContext = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
+
+	fz_lock_impl* locks = new fz_lock_impl;
+	fContext = fz_new_context(nullptr, &locks->context, FZ_STORE_DEFAULT);
 	fz_register_document_handlers(fContext);
     // why bgr instead of rgb?
     fColorSpace = fz_device_bgr(fContext);
@@ -80,8 +106,11 @@ PDFEngine::~PDFEngine()
 		fz_drop_document(fContext, fDocument);
 	}
 
-	if (fContext)
+	if (fContext) {
+		fz_lock_impl* locks = static_cast<fz_lock_impl*>(fContext->locks->user);
 		fz_drop_context(fContext);
+		delete locks;
+	}
 }
 
 

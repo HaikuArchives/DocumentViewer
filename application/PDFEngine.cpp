@@ -94,6 +94,9 @@ PDFEngine::PDFEngine(BString fileName, BString& password)
 		}
 	}
 
+	// Contexts for alternate threads
+	fRenderContext = fz_clone_context(fContext);
+
 	Start();
 }
 
@@ -286,10 +289,12 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	fz_var(list);
 	fz_var(dev);
 
+	pthread_mutex_lock(&gRendermutex);
+
     bool stop = false;	// variable for avoiding return in fz_catch
-    fz_try(fContext) {
-		page = fz_load_page(fContext, fDocument, pageNumber);
-    } fz_catch(fContext) {
+	fz_try(fRenderContext) {
+		page = fz_load_page(fRenderContext, fDocument, pageNumber);
+	} fz_catch(fRenderContext) {
     	pthread_mutex_unlock(&gRendermutex);
     	stop = true;
     }
@@ -297,14 +302,14 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     if (stop)
     	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
 
-	fz_try(fContext) {
-    	list = fz_new_display_list(fContext);
-    	dev = fz_new_list_device(fContext, list);
-    	fz_run_page(fContext, page, dev, &fz_identity, nullptr);
-	} fz_catch(fContext) {
-    	fz_drop_device(fContext, dev);
-    	fz_drop_display_list(fContext, list);
-    	fz_drop_page(fContext, page);
+	fz_try(fRenderContext) {
+		list = fz_new_display_list(fRenderContext);
+		dev = fz_new_list_device(fRenderContext, list);
+		fz_run_page(fRenderContext, page, dev, &fz_identity, nullptr);
+	} fz_catch(fRenderContext) {
+		fz_drop_device(fRenderContext, dev);
+		fz_drop_display_list(fRenderContext, list);
+		fz_drop_page(fRenderContext, page);
     	pthread_mutex_unlock(&gRendermutex);
     	stop = true;
 	}
@@ -312,17 +317,16 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	if (stop)
     	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
 
-	fz_drop_device(fContext, dev);
+	fz_drop_device(fRenderContext, dev);
 	dev = nullptr;
 
     fz_matrix ctm = fz_identity;
-    fz_rect bbox;
 
 	fz_pixmap* image = nullptr;
 	fz_var(image);
 
 	fz_rect bounds;
-	fz_bound_page(fContext, page, &bounds);
+	fz_bound_page(fRenderContext, page, &bounds);
 
 	float zoomFactor = 1;
 
@@ -337,25 +341,25 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     fz_irect storage;
 	fz_irect* pageBox = fz_round_rect(&storage, fz_transform_rect(&bounds, &ctm));
 
-	fz_try(fContext) {
-    	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, pageBox);
+	fz_try(fRenderContext) {
+		image = fz_new_pixmap_with_bbox(fRenderContext, fColorSpace, pageBox);
 
     	//save alpha
-    	//fz_clear_pixmap(fContext, image);
-    	fz_clear_pixmap_with_value(fContext, image, 255);
-    	dev = fz_new_draw_device(fContext, image);
+		//fz_clear_pixmap(fRenderContext, image);
+		fz_clear_pixmap_with_value(fRenderContext, image, 255);
+		dev = fz_new_draw_device(fRenderContext, image);
     	if (list)
-    		fz_run_display_list(fContext, list, dev, &ctm, &bounds, nullptr);
+			fz_run_display_list(fRenderContext, list, dev, &ctm, &bounds, nullptr);
    		 else
-   	 		fz_run_page(fContext, page, dev, &ctm, nullptr);
+			fz_run_page(fRenderContext, page, dev, &ctm, nullptr);
 
-    	fz_drop_device(fContext, dev);
+		fz_drop_device(fRenderContext, dev);
     	dev = nullptr;
-	} fz_catch(fContext) {
-		fz_drop_device(fContext, dev);
-		fz_drop_pixmap(fContext, image);
-    	fz_drop_display_list(fContext, list);
-		fz_drop_page(fContext, page);
+	} fz_catch(fRenderContext) {
+		fz_drop_device(fRenderContext, dev);
+		fz_drop_pixmap(fRenderContext, image);
+		fz_drop_display_list(fRenderContext, list);
+		fz_drop_page(fRenderContext, page);
 		pthread_mutex_unlock(&gRendermutex);
     	stop = true;
 	}
@@ -363,20 +367,22 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	if (stop)
     	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
 
-    fz_flush_warnings(fContext);
+	fz_flush_warnings(fRenderContext);
 
     int imageWidth = pageBox->x1 - pageBox->x0;
     int imageHeight = pageBox->y1 - pageBox->y0;
 
 
     BBitmap* bitmap = new BBitmap(BRect(0, 0, imageWidth - 1, imageHeight - 1), B_RGBA32);
-    bitmap->SetBits(fz_pixmap_samples(fContext, image),
-    	imageWidth * imageHeight * fz_pixmap_components(fContext, image), 0, B_RGBA32);
+	bitmap->SetBits(fz_pixmap_samples(fRenderContext, image),
+		imageWidth * imageHeight * fz_pixmap_components(fRenderContext, image), 0, B_RGBA32);
 
-    fz_drop_device(fContext, dev);
-	fz_drop_pixmap(fContext, image);
-    fz_drop_display_list(fContext, list);
-	fz_drop_page(fContext, page);
+	fz_drop_device(fRenderContext, dev);
+	fz_drop_pixmap(fRenderContext, image);
+	fz_drop_display_list(fRenderContext, list);
+	fz_drop_page(fRenderContext, page);
+
+	pthread_mutex_unlock(&gRendermutex);
 	return unique_ptr<BBitmap>(bitmap);
 }
 
@@ -384,10 +390,8 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 std::pair<BBitmap*, bool>
 PDFEngine::_RenderBitmap(int const& pageNumber)
 {
-	pthread_mutex_lock(&gRendermutex);
 	unique_ptr<BBitmap> bitmap = RenderBitmap(pageNumber, fDefaultRect.Width(),
 		fDefaultRect.Height(), 0);
-	pthread_mutex_unlock(&gRendermutex);
 
     return std::pair<BBitmap*, bool>(bitmap.release(), false);
 }

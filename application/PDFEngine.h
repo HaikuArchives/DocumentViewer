@@ -46,6 +46,7 @@ private:
 
     fz_document*			fDocument;
     fz_context*				fContext;
+	fz_context*				fRenderContext;
     
     fz_page*				fPage;
 	fz_display_list*		fList;

@@ -233,10 +233,9 @@ MainWindow::_FileType(BString const& file)
     BMimeType::GuessMimeType(&ref, &mime);
     BMessage msg;
 	uint32 i=0;
-	char *ptr;
 	mime.GetFileExtensions(&msg);
 
-	BString type = "";
+	BString type;
 	while (true) {
    		if (msg.FindString("extensions", i++, &type) != B_OK)
   			break;

@@ -28,7 +28,7 @@ SearchListView::ItemInvoked(void)
 {
 	BIntegerField* pageField = (BIntegerField*)CurrentSelection()->GetField(0);
 
-    if (pageField == nullptr)
+	if (pageField == nullptr)
         return;
 	
 	BMessage msg(MSG_HIGHLIGHT_RECT);

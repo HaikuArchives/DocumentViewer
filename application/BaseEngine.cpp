@@ -56,7 +56,7 @@ BaseEngine::Start(void)
     fBitmap.resize(fPages, std::pair<BBitmap*, bool>((BBitmap*)nullptr, false));
     fMutex.resize(fPages);
 
-    pthread_create(&fDrawingThread, nullptr, _DrawingThread,(void*)(this));
+	pthread_create(&fDrawingThread, nullptr, _DrawingThread, (void*)(this));
 }
 
 

@@ -42,7 +42,7 @@ PDFEngine::PDFEngine(BString fileName, BString& password)
     }
 
 	fz_try(fContext) {
-    	fDocument = fz_open_document(fContext, const_cast<char*>(fileName.String()));
+		fDocument = fz_open_document(fContext, fileName.String());
 	} fz_catch(fContext) {
 		!out << "can not open document" << endl;
 	}

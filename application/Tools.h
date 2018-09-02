@@ -172,15 +172,15 @@ public:
 	  if (str.Length() == 0 || searchStr.Length() == 0)
 	    return result;
 	
-	    int n1 = str.FindFirst(searchStr) + searchStr.Length();
-	    int n2 = str.FindFirst(" ", n1);
+	  int n1 = str.FindFirst(searchStr) + searchStr.Length();
+	  int n2 = str.FindFirst(" ", n1);
 	
-	    if (n2 == B_ERROR)
-	        n2 = str.Length();
+	  if (n2 == B_ERROR)
+		n2 = str.Length();
 	
-	    str.CopyInto(result, n1, n2 - n1);
+	  str.CopyInto(result, n1, n2 - n1);
 	
-	    return result;
+	  return result;
 	}
 	
 	

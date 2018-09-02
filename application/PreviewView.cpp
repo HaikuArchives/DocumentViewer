@@ -210,7 +210,7 @@ BasicPreviewView::Draw(BRect updateRect)
                 rect.right = fColumnWidth;
                 rect.bottom = fPageHeight = _PageHeight(i);
                 rect.OffsetBySelf(where);
-                if (rect.Intersects(updateRect)) {
+				if (rect.Intersects(updateRect)) {
                     DrawBitmapAsync(_Page(i), rect);
                     if (i == fHighlightPageNumber) {
                         SetHighColor(0, 0, 255, 255);
@@ -284,7 +284,7 @@ BasicPreviewView::SetFile(BString file, BString fileType, BString& password)
 	delete fEngine;
 	if (fileType == "djvu")
     	fEngine = new DJVUEngine(file, password);
-    else if (fileType == "pdf")
+	else if (fileType == "pdf" || fileType == "xps")
     	fEngine = new PDFEngine(file, password);
     
     _AdaptScrollBarRange();

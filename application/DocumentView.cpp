@@ -142,7 +142,7 @@ BasicDocumentView::BasicDocumentView(BString filename, BString fileType,
 	
 	if (filename.Length() == 0)
 		fEngine = nullptr;
-	else if (fileType == "pdf")
+	else if (fileType == "pdf" || fileType == "xps")
    		fEngine = unique_ptr<BaseEngine>(new PDFEngine(filename, password));
    	else if (fileType == "djvu")
    		fEngine = unique_ptr<BaseEngine>(new DJVUEngine(filename, password));
@@ -193,7 +193,7 @@ BasicDocumentView::SetFile(const BString& filename, BString const& fileType,
 	if (filename.Length() == 0)
 		return;
 	
-	if (fileType == "pdf")
+	if (fileType == "pdf" || fileType == "xps")
 		fEngine = unique_ptr<BaseEngine>(new PDFEngine(filename, password));
 	else if (fileType == "djvu")
 		fEngine = unique_ptr<BaseEngine>(new DJVUEngine(filename, password));

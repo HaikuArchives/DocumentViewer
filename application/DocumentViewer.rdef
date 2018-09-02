@@ -17,7 +17,8 @@ resource app_signature "application/x-vnd.documentviewer";
 resource file_types message {
 	"types" = "application/x-pdf",
 	"types" = "application/pdf",
-	"types" = "application/x-djvu"
+	"types" = "application/x-djvu",
+	"types" = "application/vnd.ms-xpsdocument"
 };
 
 resource vector_icon {

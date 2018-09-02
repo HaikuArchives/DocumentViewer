@@ -20,8 +20,6 @@
 
 using namespace std;
 
-pthread_mutex_t	PDFEngine::gRendermutex;
-
 
 struct fz_lock_impl {
 	fz_locks_context context;
@@ -71,6 +69,7 @@ PDFEngine::PDFEngine(BString fileName, BString& password)
 		fDocument = fz_open_document(fContext, fileName.String());
 	} fz_catch(fContext) {
 		!out << "can not open document" << endl;
+		throw;
 	}
 
 	if (fz_needs_password(fContext, fDocument)) {
@@ -289,13 +288,13 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	fz_var(list);
 	fz_var(dev);
 
-	pthread_mutex_lock(&gRendermutex);
+	pthread_mutex_lock(&fRendermutex);
 
     bool stop = false;	// variable for avoiding return in fz_catch
 	fz_try(fRenderContext) {
 		page = fz_load_page(fRenderContext, fDocument, pageNumber);
 	} fz_catch(fRenderContext) {
-    	pthread_mutex_unlock(&gRendermutex);
+		pthread_mutex_unlock(&fRendermutex);
     	stop = true;
     }
 
@@ -310,7 +309,7 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 		fz_drop_device(fRenderContext, dev);
 		fz_drop_display_list(fRenderContext, list);
 		fz_drop_page(fRenderContext, page);
-    	pthread_mutex_unlock(&gRendermutex);
+		pthread_mutex_unlock(&fRendermutex);
     	stop = true;
 	}
 
@@ -360,7 +359,7 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 		fz_drop_pixmap(fRenderContext, image);
 		fz_drop_display_list(fRenderContext, list);
 		fz_drop_page(fRenderContext, page);
-		pthread_mutex_unlock(&gRendermutex);
+		pthread_mutex_unlock(&fRendermutex);
     	stop = true;
 	}
 
@@ -382,7 +381,7 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	fz_drop_display_list(fRenderContext, list);
 	fz_drop_page(fRenderContext, page);
 
-	pthread_mutex_unlock(&gRendermutex);
+	pthread_mutex_unlock(&fRendermutex);
 	return unique_ptr<BBitmap>(bitmap);
 }
 

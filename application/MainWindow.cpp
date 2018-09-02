@@ -240,7 +240,7 @@ MainWindow::_FileType(BString const& file)
    		if (msg.FindString("extensions", i++, &type) != B_OK)
   			break;
 
-   		if (type == "djvu" || type == "pdf")
+		if (type == "djvu" || type == "pdf" || type == "xps")
    			break;
 	}
 
@@ -248,6 +248,8 @@ MainWindow::_FileType(BString const& file)
 	if (type == "") {
 		if (file.IFindLast("djvu") != B_ERROR)
 			type = "djvu";
+		if (file.IFindLast("xps") != B_ERROR)
+			type = "xps";
 	}
 
 	return type;

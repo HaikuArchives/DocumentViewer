@@ -57,7 +57,7 @@ private:
     BString                 fFileName;
     BString               	fPassword;
     
-    static pthread_mutex_t 	gRendermutex;
+	pthread_mutex_t			fRendermutex;
 
     Debug             		out;
 };

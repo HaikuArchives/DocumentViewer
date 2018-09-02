@@ -11,6 +11,7 @@
 #include <UnicodeChar.h>
 #include <memory>
 #include <string>
+#include <functional>
 
 #include "Flags.h"
 #include "Messages.h"
@@ -34,12 +35,12 @@ PDFEngine::PDFEngine(BString fileName, BString& password)
 	fz_register_document_handlers(fContext);
     // why bgr instead of rgb?
     fColorSpace = fz_device_bgr(fContext);
-    
+
     if (!fContext) {
     	!out << "cannot init context" << endl;
-    	exit(1);	
+    	exit(1);
     }
-    
+
 	fz_try(fContext) {
     	fDocument = fz_open_document(fContext, const_cast<char*>(fileName.String()));
 	} fz_catch(fContext) {
@@ -52,21 +53,21 @@ PDFEngine::PDFEngine(BString fileName, BString& password)
 				auto t = (new PasswordRequestWindow())->Go();
 				if (std::get<1>(t) == false)
 					throw "wrong password";
-				
+
 				if (fz_authenticate_password(fContext, fDocument, std::get<0>(t))) {
 					password = 	std::get<0>(t);
 					break;
 				}
-			}	
+			}
 		} else {
 			int okay = fz_authenticate_password(fContext, fDocument,
             	const_cast<char*>(password.String()));
-            	
+
           	if (!okay)
           		throw "wrong password";
 		}
 	}
-	
+
 	Start();
 }
 
@@ -78,7 +79,7 @@ PDFEngine::~PDFEngine()
 	if (fDocument) {
 		fz_drop_document(fContext, fDocument);
 	}
-	
+
 	if (fContext)
 		fz_drop_context(fContext);
 }
@@ -97,7 +98,7 @@ void
 PDFEngine::WriteOutline(BOutlineListView* list)
 {
 	auto outline = fz_load_outline(fContext, fDocument);
-	
+
 	std::function<void(fz_outline*, BOutlineListView*, BListItem*, int)> OutlineToList =
 	[&OutlineToList](fz_outline* outline, BOutlineListView* list, BListItem* super, int level) {
 		OutlineItem* item;
@@ -106,18 +107,18 @@ PDFEngine::WriteOutline(BOutlineListView* list)
 				item = new OutlineItem(outline->title, outline->dest.ld.gotor.page);
 			else
 				item = new OutlineItem(outline->title, 0);
-			
+
 			list->AddUnder(item, super);
-			
+
 			if (outline->down)
 				OutlineToList(outline->down,list, item, level + 1);
-				
+
 	//		((OutlineListView*)list)->ReverseOrder(super);
-					
+
 			outline = outline->next;
-		}	
+		}
 	};
-		
+
 	OutlineToList(outline, list, nullptr, 0);
 	fz_drop_outline(fContext, outline);
 }
@@ -151,13 +152,13 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
     page = fz_load_page(fContext, fDocument, pageNumber);
 
     fz_text_sheet* sheet = fz_new_text_sheet(fContext);
-	
+
 	fz_device* dev = nullptr;
 	fz_var(dev);
-	
+
 	fz_text_page* text = nullptr;
 	fz_var(text);
-	
+
 	fz_try(fContext) {
 		text = fz_new_text_page(fContext);
 		dev = fz_new_text_device(fContext, sheet, text);
@@ -204,14 +205,14 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
 			contextVec.push_back(context);
 		}
 
-	
+
 	} fz_catch(fContext) {
 		fz_drop_device(fContext, dev);
 		fz_drop_text_page(fContext, text);
 		fz_drop_text_sheet(fContext, sheet);
 		fz_rethrow(fContext);
 	}
-		
+
 	return move(make_tuple(contextVec, rectVec));
 }
 
@@ -248,14 +249,14 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	if (pageNumber < 0 || pageNumber >= fPages) {
     	return unique_ptr<BBitmap>(nullptr);
 	}
-	
+
 	fz_page *page;
 	fz_display_list *list = nullptr;
 	fz_device *dev = nullptr;
-	
+
 	fz_var(list);
 	fz_var(dev);
-	
+
     bool stop = false;	// variable for avoiding return in fz_catch
     fz_try(fContext) {
 		page = fz_load_page(fContext, fDocument, pageNumber);
@@ -263,10 +264,10 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     	pthread_mutex_unlock(&gRendermutex);
     	stop = true;
     }
-    
+
     if (stop)
     	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
-	
+
 	fz_try(fContext) {
     	list = fz_new_display_list(fContext);
     	dev = fz_new_list_device(fContext, list);
@@ -278,24 +279,24 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     	pthread_mutex_unlock(&gRendermutex);
     	stop = true;
 	}
-	
+
 	if (stop)
     	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
-    	
+
 	fz_drop_device(fContext, dev);
 	dev = nullptr;
 
     fz_matrix ctm = fz_identity;
     fz_rect bbox;
-    
+
 	fz_pixmap* image = nullptr;
 	fz_var(image);
-	
+
 	fz_rect bounds;
 	fz_bound_page(fContext, page, &bounds);
-	
+
 	float zoomFactor = 1;
-	
+
 	if (width <= 0) {
 		zoomFactor = height / (bounds.y1 - bounds.y0);
 	} else {
@@ -306,19 +307,19 @@ PDFEngine::RenderBitmap(int const& pageNumber,
   	fz_pre_scale(&ctm, zoomFactor, zoomFactor);
     fz_irect storage;
 	fz_irect* pageBox = fz_round_rect(&storage, fz_transform_rect(&bounds, &ctm));
-	
+
 	fz_try(fContext) {
     	image = fz_new_pixmap_with_bbox(fContext, fColorSpace, pageBox);
-    	
+
     	//save alpha
-    	//fz_clear_pixmap(fContext, image); 
+    	//fz_clear_pixmap(fContext, image);
     	fz_clear_pixmap_with_value(fContext, image, 255);
     	dev = fz_new_draw_device(fContext, image);
     	if (list)
     		fz_run_display_list(fContext, list, dev, &ctm, &bounds, nullptr);
    		 else
    	 		fz_run_page(fContext, page, dev, &ctm, nullptr);
-    	
+
     	fz_drop_device(fContext, dev);
     	dev = nullptr;
 	} fz_catch(fContext) {
@@ -329,12 +330,12 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 		pthread_mutex_unlock(&gRendermutex);
     	stop = true;
 	}
-	
+
 	if (stop)
     	return std::make_unique<BBitmap>(BRect(0, 0, width, height), B_RGBA32);
-    	
+
     fz_flush_warnings(fContext);
-    
+
     int imageWidth = pageBox->x1 - pageBox->x0;
     int imageHeight = pageBox->y1 - pageBox->y0;
 
@@ -342,7 +343,7 @@ PDFEngine::RenderBitmap(int const& pageNumber,
     BBitmap* bitmap = new BBitmap(BRect(0, 0, imageWidth - 1, imageHeight - 1), B_RGBA32);
     bitmap->SetBits(fz_pixmap_samples(fContext, image),
     	imageWidth * imageHeight * fz_pixmap_components(fContext, image), 0, B_RGBA32);
-    
+
     fz_drop_device(fContext, dev);
 	fz_drop_pixmap(fContext, image);
     fz_drop_display_list(fContext, list);
@@ -358,6 +359,6 @@ PDFEngine::_RenderBitmap(int const& pageNumber)
 	unique_ptr<BBitmap> bitmap = RenderBitmap(pageNumber, fDefaultRect.Width(),
 		fDefaultRect.Height(), 0);
 	pthread_mutex_unlock(&gRendermutex);
-    
+
     return std::pair<BBitmap*, bool>(bitmap.release(), false);
 }

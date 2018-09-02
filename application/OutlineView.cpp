@@ -34,12 +34,12 @@ EditListItemWindow::EditListItemWindow(OutlineItem* item, const BString& name)
 	fPageTC = new BTextControl("Page ", "", nullptr);
 	BString str;
 	str << item->PageNumber() + 1;
-	
+
 	fPageTC->SetText(str);
-	
+
 	BButton* okButton = new BButton("ok_button", "OK", new BMessage(M_OK));
 	SetDefaultButton(okButton);
-	
+
 	fGoToPageCB = new BCheckBox("Go to page ");
     fGoToPageCB->SetValue(1);
 
@@ -53,7 +53,7 @@ EditListItemWindow::EditListItemWindow(OutlineItem* item, const BString& name)
     box1->SetBorder(B_FANCY_BORDER);
     box1->AddChild(layout->View());
 
-	
+
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 10)
         .SetInsets(10, 10, 10, 10)
         .Add(fNameTC)
@@ -65,7 +65,7 @@ EditListItemWindow::EditListItemWindow(OutlineItem* item, const BString& name)
         	.Add(okButton)
         .End()
    	.End();
-	
+
 	fNameTC->MakeFocus();
 	fItem = item;
 }
@@ -90,11 +90,11 @@ EditListItemWindow::MessageReceived(BMessage* message)
             fItem->SetPageNumber(atoi(fPageTC->Text()) - 1);
             fTargetLooper->PostMessage(fCode, fTargetHandler);
             Close();
-            
+
             break;
         }
-        
-        
+
+
 		default:
             BWindow::MessageReceived(message);
             break;
@@ -175,7 +175,7 @@ OutlineListView::ReverseOrder(OutlineItem* super)
 {
 	if (super == nullptr)
 		return;
-		
+
 	int32 end = CountItemsUnder(super, true) - 1;
 	if (end < 1)
 		return;
@@ -189,7 +189,7 @@ OutlineListView::ReverseOrder(OutlineItem* super)
 void
 OutlineListView::MoveFirstToEnd(OutlineItem* super)
 {
-	// move the element fromt the front to the end of the list 
+	// move the element fromt the front to the end of the list
 	int32 transpositions = CountItemsUnder(super, true) - 1;
 	for (int i = 0; i < transpositions; ++i)
 		SwapItems(FullListIndexOf(ItemUnderAt(super, true, i)),
@@ -201,7 +201,7 @@ OutlineListView::MouseDown(BPoint where)
 {
 	int32 idx =  CurrentSelection();
 	BOutlineListView::MouseDown(where);
-	
+
 	if (CurrentSelection() == idx) {
 		DeselectAll();
 	}
@@ -213,7 +213,7 @@ OutlineListView::SetEngine(BaseEngine* engine)
 {
 	if (engine == nullptr)
 		return;
-		
+
 	MakeEmpty();
 	fEngine = engine;
 	fEngine->WriteOutline(this);
@@ -225,9 +225,9 @@ void
 OutlineListView::ReverseOrder(void)
 {
 	int32 size = FullListCountItems();
-	
+
 	for (int i = 0; i < size; ++i)
-		ReverseOrder(FullListItemAt(i));
+		ReverseOrder(static_cast<OutlineItem*>(FullListItemAt(i)));
 }
 
 
@@ -236,18 +236,18 @@ OutlineListView::Find(const BString& name)
 {
 	if (name.Length() == 0)
 		return;
-		
+
 	if (name != fSearchString) {
 		fStartSearchIndex = 0;
-		fSearchString = name;	
+		fSearchString = name;
 	}
-	
+
 	int32 size = FullListCountItems();
 	OutlineItem* item;
-	
+
 	for (int j = 0; j < 2; ++j) {
 		for (int i = fStartSearchIndex; i < size; ++i) {
-			item = FullListItemAt(i); 
+			item = static_cast<OutlineItem*>(FullListItemAt(i));
 			if (item->Name().IFindFirst(name) != B_ERROR) {
 				DeselectAll();
 				Select(i, true);
@@ -277,13 +277,13 @@ OutlineListView::_GoToPage(const int& pageNumber)
 }
 
 
-status_t			
+status_t
 OutlineListView::Invoke(BMessage* message)
 {
 	auto item =  _SelectedItem();
 	if (item)
 		_GoToPage(item->PageNumber());
-		
+
 	BListView::Invoke(message);
 }
 
@@ -301,7 +301,7 @@ bool
 OutlineListView::InitiateDrag(BPoint point, int32 itemIndex, bool initialySelected)
 {
 	!out << "DRAG" << endl;
-	return BOutlineListView::InitiateDrag(point, itemIndex, initialySelected);	
+	return BOutlineListView::InitiateDrag(point, itemIndex, initialySelected);
 }
 
 
@@ -309,38 +309,38 @@ OutlineListView::InitiateDrag(BPoint point, int32 itemIndex, bool initialySelect
 OutlineView::OutlineView(void)
 	:
     BGroupView("outline", B_VERTICAL, 0)
-{   
-	const float iconHeight = 30;    
+{
+	const float iconHeight = 30;
   	fDeleteItem = new ImageButton("quit",
         new BMessage(M_DELETE_ITEM), 0.3, 1);
     fDeleteItem->SetExplicitMinSize(BSize(iconHeight, iconHeight));
     fDeleteItem->SetExplicitMaxSize(BSize(iconHeight, iconHeight));
-    
+
     fAddItem = new ImageButton("plus",
         new BMessage(M_ADD_ITEM), 0.3, 1);
     fAddItem->SetExplicitMinSize(BSize(iconHeight, iconHeight));
     fAddItem->SetExplicitMaxSize(BSize(iconHeight, iconHeight));
-    
+
     fEditItem = new ImageButton("edit",
         new BMessage(M_EDIT_ITEM), 0.3, 1);
     fEditItem->SetExplicitMinSize(BSize(iconHeight, iconHeight));
     fEditItem->SetExplicitMaxSize(BSize(iconHeight, iconHeight));
-    
+
     fFindNext = new ImageButton("find_next",
         new BMessage(M_FIND_NEXT), 0.3, 1);
     fFindNext->SetExplicitMinSize(BSize(iconHeight, iconHeight));
     fFindNext->SetExplicitMaxSize(BSize(iconHeight, iconHeight));
-    
+
     fOutlineListView = new OutlineListView();
-    
+
  	fVScrollBar = new BScrollBar("v_scrollbar",
                     fOutlineListView, 0, 100, B_VERTICAL);
     fHScrollBar = new BScrollBar("h_scrollbar",
-                    fOutlineListView, 0, 100, B_HORIZONTAL);   
+                    fOutlineListView, 0, 100, B_HORIZONTAL);
 
 	fSearchTC   = new BTextControl("", "", new BMessage(M_FIND_NEXT));
 
-	BGroupLayout* 
+	BGroupLayout*
 	controlsLayout = BLayoutBuilder::Group<>(B_VERTICAL, 0)
     	.AddGroup(B_HORIZONTAL, 0)
     		.Add(fAddItem)
@@ -354,17 +354,17 @@ OutlineView::OutlineView(void)
     BBox* box1 = new BBox("box1");
     box1->SetBorder(B_FANCY_BORDER);
     box1->AddChild(controlsLayout->View());
-    
+
     BGroupLayout*
 	listLayout = BLayoutBuilder::Group<>(B_HORIZONTAL, 0)
     	.Add(fOutlineListView)
        	.Add(fVScrollBar)
    	;
-   	
+
    	BBox* box2 = new BBox("box2");
     box2->SetBorder(B_FANCY_BORDER);
     box2->AddChild(listLayout->View());
-	
+
     BLayoutBuilder::Group<>(this)
     	.Add(box1)
 		.Add(box2)
@@ -380,7 +380,7 @@ OutlineView::AttachedToWindow(void)
 	fAddItem->SetTarget(this);
 	fEditItem->SetTarget(this);
 	fSearchTC->SetTarget(this);
-	fFindNext->SetTarget(this);	
+	fFindNext->SetTarget(this);
     BGroupView::AttachedToWindow();
 }
 
@@ -390,17 +390,17 @@ OutlineView::EngineChanged(BaseEngine* engine)
 {
 	//ToDo: save outline
 	fOutlineListView->SetEngine(engine);
-	Invalidate();	
-}									
+	Invalidate();
+}
 
 
 void
 OutlineView::_ShowEditWindow(void)
 {
-	int idx = fOutlineListView->CurrentSelection();	
+	int idx = fOutlineListView->CurrentSelection();
 	if (idx < 0)
 		return;
-		
+
 	OutlineItem* item = static_cast<OutlineItem*>(fOutlineListView->FullListItemAt(idx));
 	item->SetPageNumber(_CurrentPageNumber());
 	auto temp = new EditListItemWindow(item);
@@ -424,7 +424,7 @@ OutlineView::MessageReceived(BMessage* message)
         case M_DELETE_ITEM:
         	fOutlineListView->RemoveCurrentSelection();
 			break;
-			
+
 		case M_ADD_ITEM:
 		{
 			OutlineItem* item = new OutlineItem("", _CurrentPageNumber());
@@ -433,24 +433,24 @@ OutlineView::MessageReceived(BMessage* message)
 			if (idx < 0) {
 				fOutlineListView->AddItem(item);
 			} else {
-				super = fOutlineListView->FullListItemAt(idx);
+				super = static_cast<OutlineItem*>(fOutlineListView->FullListItemAt(idx));
 				fOutlineListView->AddUnder(item, super);
 			}
-			
+
 			fOutlineListView->MoveFirstToEnd(super);
-			
+
 			fOutlineListView->Select(fOutlineListView->IndexOf(item));
 			fOutlineListView->Invalidate();
-			
+
 			_ShowEditWindow();
-			
+
 			break;
 		}
-		
+
 		case M_EDIT_ITEM:
 			_ShowEditWindow();
 			break;
-		
+
 		case M_ITEM_CHANGED:
 		{
 			fOutlineListView->Invalidate();
@@ -458,16 +458,16 @@ OutlineView::MessageReceived(BMessage* message)
 			auto compare = [](const OutlineItem* i1, const OutlineItem* i2){
 				return i1->PageNumber() - i2->PageNumber();
 			};
-			
+
 			fOutlineListView->FullListSortItems(compare);
 			*/
 			break;
 		}
-		
+
 		case M_FIND_NEXT:
 			fOutlineListView->Find(fSearchTC->Text());
 			break;
-		
+
 		default:
 			BGroupView::MessageReceived(message);
 			break;

@@ -12,6 +12,7 @@
 #include <fstream>
 #include <random>
 #include <sstream>
+#include <functional>
 
 #include <GroupLayout.h>
 #include <GroupLayoutBuilder.h>
@@ -38,14 +39,14 @@ ImageSpinner::ImageSpinner(float const& imageHeight)
 	fBasicImageSpinner = new BasicImageSpinner;
 	fBasicImageSpinner->SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, fImageHeight + 6));
 	fBasicImageSpinner->SetExplicitMinSize(BSize(0, 0/*fImageHeight + 6*/));
-	
-	fDeleteButton = new ImageButton("quit", new BMessage(M_DELETE), 0.3, 1);	
+
+	fDeleteButton = new ImageButton("quit", new BMessage(M_DELETE), 0.3, 1);
 	fBackButton = new ImageButton("back", new BMessage(M_MOVE_LEFT), 0.3, 1);
     fNextButton = new ImageButton("next", new BMessage(M_MOVE_RIGHT), 0.3, 1);
     fOpenButton = new ImageButton("open_document",
-    	new BMessage(MSG_OPEN_FILE_PANEL), 0.3, 1);				
-  	
-        				
+    	new BMessage(MSG_OPEN_FILE_PANEL), 0.3, 1);
+
+
   	BGroupLayout* navigationLayout = BLayoutBuilder::Group<>(B_HORIZONTAL, 0)
   		.Add(fDeleteButton)
     	.Add(fBackButton)
@@ -53,14 +54,14 @@ ImageSpinner::ImageSpinner(float const& imageHeight)
     	.Add(fOpenButton, 10)
     	//.AddStrut(12)
     ;
-    
+
     navigationLayout->SetExplicitMinSize(BSize(0, 20));
     navigationLayout->SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, 50));
-    
+
     auto scrollbar = new BScrollBar("h_scrollbar",
                     fBasicImageSpinner, 0, 0, B_HORIZONTAL);
 	scrollbar->SetSteps(200, 200);
-	
+
 	BLayoutBuilder::Group<>(this)
 		.Add(scrollbar)
 		.AddGlue(0)
@@ -98,23 +99,23 @@ ImageSpinner::MessageReceived(BMessage* message)
 		case M_BACK:
 			fBasicImageSpinner->Back();
             break;
-            
+
         case M_NEXT:
         	fBasicImageSpinner->Next();
             break;
-            
+
        	case M_DELETE:
        		fBasicImageSpinner->RemoveSelectedItem();
        		break;
-            
+
       	case M_MOVE_LEFT:
       		fBasicImageSpinner->MoveLeftSelectedItem();
       		break;
-      		
+
       	case M_MOVE_RIGHT:
       		fBasicImageSpinner->MoveRightSelectedItem();
       		break;
-     
+
         default:
             BGroupView::MessageReceived(message);
             break;
@@ -129,7 +130,7 @@ ImageSpinner::Add(BString const& str, std::unique_ptr<BBitmap>&& bitmap)
 		auto res = Tools::RescaleBitmap(move(bitmap), 0, fImageHeight);
 		fBasicImageSpinner->Add(str, move(res));
 	} else {
-		fBasicImageSpinner->Add(str, move(bitmap));	
+		fBasicImageSpinner->Add(str, move(bitmap));
 	}
 }
 
@@ -164,16 +165,16 @@ BasicImageSpinner::BasicImageSpinner(void)
     //SetDrawingMode(B_OP_ALPHA);
     //SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
 
-	
+
     fSettingsPath = Tools::SettingsPath();
-		
+
 	_LoadSettings();
 }
 
 
 BasicImageSpinner::~BasicImageSpinner()
 {
-	_SaveSettings();	
+	_SaveSettings();
 }
 
 
@@ -191,24 +192,24 @@ BasicImageSpinner::Draw(BRect updateRect)
 	BRect bounds = Bounds();
     SetHighColor(ui_color(B_PANEL_BACKGROUND_COLOR));
     FillRect(bounds);
-    
+
     if (fItems.empty())
     	return;
-    
+
     SetPenSize(2);
     SetHighColor(0, 0, 0, 255);
-    
+
     float height = get<0>(fItems.front())->Bounds().Height();
-    
+
     BPoint offset(fSpace, (bounds.Height() - height) / 2);
-    
+
     if (offset.y < 0)
     	offset.y = 0;
-    
+
     bool hasDrawn = false;
-   	int index = 0;             
+   	int index = 0;
     for (auto it = fItems.begin(); it != fItems.end(); ++it, ++index) {
-    	BBitmap* bitmap = (BBitmap*)(&*get<0>(*it)); 
+    	BBitmap* bitmap = (BBitmap*)(&*get<0>(*it));
     	auto rect = bitmap->Bounds().OffsetByCopy(offset);
     	if (rect.Intersects(updateRect)) {
     		hasDrawn = true;
@@ -218,16 +219,16 @@ BasicImageSpinner::Draw(BRect updateRect)
 	    		SetPenSize(3);
 	    		StrokeRect(rect);
 	    		SetPenSize(2);
-	    		SetHighColor(0, 0, 0, 255);	
+	    		SetHighColor(0, 0, 0, 255);
 	    	} else {
 	    		StrokeRect(get<0>(*it)->Bounds().OffsetByCopy(offset));
 	    	}
     	} else if (hasDrawn) {
-        	break;	
+        	break;
         }
     	offset.x += get<0>(*it)->Bounds().Width() + fSpace;
     }
-    
+
 	Sync();
 	BView::Draw(updateRect);
 }
@@ -236,23 +237,23 @@ BasicImageSpinner::Draw(BRect updateRect)
 
 void
 BasicImageSpinner::KeyDown(const char* bytes, int32 numBytes)
-{		
+{
 	if (numBytes == 1) {
 		switch (bytes[0]) {
 			case B_ENTER:
 				_SelectIndex(fCurrentIndex);
 				break;
-				
+
 			case B_DELETE:
 				RemoveSelectedItem();
 				break;
-			
+
 			case B_DOWN_ARROW: case B_RIGHT_ARROW:
-				_Next();		
+				_Next();
                 break;
-                
+
       		case B_UP_ARROW: case B_LEFT_ARROW:
-				_Back();		
+				_Back();
                 break;
 
             case B_PAGE_UP:
@@ -291,7 +292,7 @@ BasicImageSpinner::FrameResized(float newWidth, float newHeight)
 void
 BasicImageSpinner::MessageReceived(BMessage* message)
 {
-	
+
 	BView::MessageReceived(message);
 }
 
@@ -357,10 +358,10 @@ BasicImageSpinner::NeedsFile(BString const& filePath)
 			auto temp = move(*it);
 			fItems.remove(*it);
 			fItems.push_front(move(temp));
-			return false;	
+			return false;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -371,11 +372,11 @@ BasicImageSpinner::Add(BString const& filePath, std::unique_ptr<BBitmap>&& bitma
 	uniform_int_distribution<int> distribution(0, 999);
     mt19937 engine(time(NULL)); //Mersenn twister
     auto generate = bind(distribution, engine);  // RNG
-    
-    
+
+
     int idNumber;
     bool isInvalid;
-    
+
     // generate a random Number, and make sure it's unique.
     do {
     	isInvalid = false;
@@ -387,13 +388,13 @@ BasicImageSpinner::Add(BString const& filePath, std::unique_ptr<BBitmap>&& bitma
     		}
     	}
     } while (isInvalid);
-    
+
     // save bitmap to disk
     BString settingsPath(Tools::SettingsPath());
     BString path(settingsPath);
     path << idNumber;
     Tools::ExportBitmap(bitmap.get(), path);
-    
+
     _Add(filePath, move(bitmap), idNumber);
 }
 
@@ -404,12 +405,12 @@ BasicImageSpinner::_Add(BString const& filePath,
 {
 	fItems.push_front(tuple<unique_ptr<BBitmap>, BString, int>
 		(move(bitmap), filePath, bitmapID));
-	
+
 	fTotalWidth += get<0>(fItems.front())->Bounds().Width() + fSpace;
-	
+
 	if (fItems.size() > fMaxItemsNumber)
 		RemoveBackItem();
-		
+
 	_AdaptScrollBarRange();
 }
 
@@ -419,13 +420,13 @@ BasicImageSpinner::MoveLeftSelectedItem(void)
 {
 	if (fCurrentIndex < 1 || fItems.size() < 2)
 		return;
-		
-	
-	
+
+
+
 	auto it = fItems.begin();
 	for (int i = 1; i < fCurrentIndex; ++i)
 		++it;
-	
+
 	auto left = it;
 	++it;
 	swap(*left, *it);
@@ -439,17 +440,17 @@ BasicImageSpinner::MoveRightSelectedItem(void)
 	if (fCurrentIndex > (fItems.size() - 2)
 		|| fItems.size() < 2)
 		return;
-	
+
 	float width = fSpace;
 	auto it = fItems.begin();
 	for (int i = 0; i < fCurrentIndex; ++i)
 		++it;
-	
+
 	auto left = it;
 	++it;
 	swap(*left, *it);
-	
-	_Next();	
+
+	_Next();
 }
 
 
@@ -457,12 +458,12 @@ void
 BasicImageSpinner::RemoveBackItem(void)
 {
 	fTotalWidth -= (get<0>(fItems.back())->Bounds().Width() + fSpace);
-	
+
 	BString path(Tools::SettingsPath());
 	path << get<2>(fItems.back());
 	BEntry entry(path);
 	entry.Remove();
-	fItems.pop_back();	
+	fItems.pop_back();
 	_AdaptScrollBarRange();
 	Invalidate();
 }
@@ -473,25 +474,25 @@ BasicImageSpinner::RemoveSelectedItem(void)
 {
 	if (fItems.empty() || fCurrentIndex < 0)
 		return;
-		
+
 	auto it = fItems.begin();
 	for (int i = 0; i < fCurrentIndex; ++i)
 		++it;
-	
+
 	fTotalWidth -= (get<0>(*it)->Bounds().Width() + fSpace);
-	
+
 	BString path(Tools::SettingsPath());
 	path << get<2>(*it);
 	BEntry entry(path);
 	entry.Remove();
 	fItems.remove(*it);
-	
+
 	--fCurrentIndex;
 	if (fCurrentIndex < 0)
 		fCurrentIndex = 0;
-		
+
 	_AdaptScrollBarRange();
-	Invalidate();	
+	Invalidate();
 }
 
 
@@ -501,9 +502,9 @@ BasicImageSpinner::_Select(BPoint const& pos)
 	float temp = 0;
 	for (auto it = fItems.begin(); it != fItems.end(); ++it) {
 		temp += get<0>(*it)->Bounds().Width() + fSpace;
-		if (temp < pos.x) 
+		if (temp < pos.x)
 			continue;
-		
+
 		BMessage msg(MSG_OPEN_FILE);
 		msg.AddString("file", get<1>(*it));
 		Window()->PostMessage(&msg);
@@ -520,15 +521,15 @@ BasicImageSpinner::_HighlightPosition(BPoint const& pos)
 	int counter = 0;
 	for (auto it = fItems.begin(); it != fItems.end(); ++it, ++counter) {
 		temp += get<0>(*it)->Bounds().Width() + fSpace;
-		if (temp >= pos.x) 
+		if (temp >= pos.x)
 			break;
 	}
-	
+
 	fCurrentIndex = counter;
-	
+
 	if (fCurrentIndex >= fItems.size())
 		fCurrentIndex = -1;
-	
+
 	Invalidate();
 }
 
@@ -539,10 +540,10 @@ BasicImageSpinner::_SelectIndex(int const& index)
 	int counter = 0;
 	for (auto it = fItems.begin(); it != fItems.end(); ++it) {
 		if (counter < index) {
-			++counter; 
+			++counter;
 			continue;
 		}
-		
+
 		BMessage msg(MSG_OPEN_FILE);
 		msg.AddString("file", get<1>(*it));
 		Window()->PostMessage(&msg);
@@ -560,7 +561,7 @@ BasicImageSpinner::_SaveSettings(void)
 	BString path = settingsPath;
 	path.Append("RecentlyOpened");
 	BFile file(path, B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
-   	
+
     BString str;
     for (auto it = fItems.rbegin(); it != fItems.rend(); ++it) {
     	str = get<1>(*it);
@@ -578,13 +579,13 @@ BasicImageSpinner::_LoadSettings(void)
 	BString settingsPath = Tools::SettingsPath();
 	BString path = settingsPath;
 	path.Append("RecentlyOpened");
-	
+
 	BFile file(path, B_READ_ONLY | B_CREATE_FILE);
 	off_t size;
   	file.GetSize(&size);
   	char buffer[size];
   	file.Read(&buffer, size);
-  	
+
   	fItems.clear();
   	BString str = "";
   	for (int i = 0; i < size; ++i) {
@@ -595,21 +596,21 @@ BasicImageSpinner::_LoadSettings(void)
   			str = "";
   			if (vec.size() != 2)
   				continue;
-  			
+
   			path = settingsPath;
   			path.Append(vec[1]);
   			unique_ptr<BBitmap> bitmap(BTranslationUtils::GetBitmap(path));
-  			
+
   			if (bitmap == nullptr)
   				return;
-  				
+
   			stringstream ss;
   			ss << vec[1];
   			int idNumber;
   			ss >>idNumber;
   			_Add(vec[0], move(bitmap), idNumber);
-  			
-  		}				
+
+  		}
   	}
 #endif
 }
@@ -618,16 +619,16 @@ BasicImageSpinner::_LoadSettings(void)
 void
 BasicImageSpinner::_ScrollToSelection(void)
 {
-	// ToDO : Not yet implemented 
-	
-	Invalidate();	
+	// ToDO : Not yet implemented
+
+	Invalidate();
 }
 
 
 void
 BasicImageSpinner::Next(void)
 {
-	_Next();	
+	_Next();
 }
 
 
@@ -639,16 +640,16 @@ BasicImageSpinner::_Next(void)
 		fCurrentIndex = 0;
 	else if (fCurrentIndex >= fItems.size())
 		fCurrentIndex = fItems.size() - 1;
-		
+
 	float width = fSpace;
 	auto it = fItems.begin();
 	for (int i = 0; i <= fCurrentIndex; ++i, ++it)
 		width += get<0>(*it)->Bounds().Width() + fSpace;
-	
+
 	if (Bounds().right < width)
 		ScrollTo(width - Bounds().Width(), 0);
-	
-	Invalidate();	
+
+	Invalidate();
 }
 
 
@@ -660,16 +661,16 @@ BasicImageSpinner::_Back(void)
 		fCurrentIndex = 0;
 	else if (fCurrentIndex >= fItems.size())
 		fCurrentIndex = fItems.size() - 1;
-	
+
 	float width = 0;
 	auto it = fItems.begin();
 	for (int i = 0; i < fCurrentIndex; ++i, ++it)
-		width += get<0>(*it)->Bounds().Width() + fSpace;	
-	
+		width += get<0>(*it)->Bounds().Width() + fSpace;
+
 	if (Bounds().left > width)
 		ScrollTo(width, 0);
-	
-	Invalidate();	
+
+	Invalidate();
 }
 
 
@@ -684,7 +685,7 @@ void
 BasicImageSpinner::_First(void)
 {
 	fCurrentIndex = 0;
-	Invalidate();	
+	Invalidate();
 }
 
 
@@ -692,7 +693,7 @@ void
 BasicImageSpinner::_Last(void)
 {
 	fCurrentIndex = fItems.size() - 1;
-	Invalidate();	
+	Invalidate();
 }
 
 
@@ -702,8 +703,8 @@ BasicImageSpinner::_AdaptScrollBarRange(void)
 	float width = -Bounds().Width();
 	if (width > 0)
 		return;
-	
-	width += fTotalWidth; 
+
+	width += fTotalWidth;
 	auto scrollbar = ScrollBar(B_HORIZONTAL);
 	scrollbar->SetRange(0, width);
 	scrollbar->SetProportion(1 - width/fTotalWidth);
@@ -716,11 +717,11 @@ BasicImageSpinner::_RandomName(void)
 	uniform_int_distribution<int> distribution(0,999);
     mt19937 engine(time(NULL)); //Mersenn twister
     auto random = bind(distribution, engine);  // RNG
-    
+
     BString str;
     str << random();
-    
-	return str;	
+
+	return str;
 }
 
 

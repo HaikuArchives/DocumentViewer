@@ -82,6 +82,8 @@ BaseEngine::Stop(void)
 void*
 BaseEngine::_DrawingThread(void* arg)
 {
+	rename_thread(find_thread(NULL), "_DrawingThread");
+
     BaseEngine*  engine =(BaseEngine*)arg;
     int& pages = engine->fPages;
     std::vector< std::pair<BBitmap*, bool> >& bitmap = engine->fBitmap;
@@ -326,7 +328,7 @@ BaseEngine::FindString(BString const& name, BLooper* looper, BHandler* handler, 
 	fTargetLooper = looper;
 	fSearchHandler = handler;
 	fStopTextSearchThread = false;
-	pthread_create(&fTextSearchThread, nullptr, _TextSearchThread,(void*)(this));
+	pthread_create(&fTextSearchThread, nullptr, _TextSearchThread, (void*)(this));
 }
 
 
@@ -340,6 +342,8 @@ BaseEngine::_FindString(BString const& name, int const& page)
 void*
 BaseEngine::_TextSearchThread(void* arg)
 {
+	rename_thread(find_thread(NULL), "_TextSearchThread");
+
 	BaseEngine*  engine =(BaseEngine*)arg;
     int& pages = engine->fPages;
 

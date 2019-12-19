@@ -45,10 +45,10 @@ PageNavigationView::PageNavigationView(unique_ptr<BMessage> message)
     box1->AddChild(layout1->View());
     
     fBackButton = new ImageButton("back",
-        new BMessage(M_GOTO_PREVIOUS_PAGE), 0.3, 1);
+        new BMessage(M_GOTO_PREVIOUS_PAGE), 0.3, 1, "Previous page");
         
     fNextButton = new ImageButton("next",
-        new BMessage(M_GOTO_NEXT_PAGE), 0.3, 1);
+        new BMessage(M_GOTO_NEXT_PAGE), 0.3, 1, "Next page");
     
     BLayoutBuilder::Group<>(this)
     	.Add(fBackButton)

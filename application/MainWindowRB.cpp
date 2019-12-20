@@ -40,7 +40,7 @@ MainWindowRB::MainWindowRB(void)
     printButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
 	fOpenFileButton = new ImageButton("open_document",
-        new BMessage(MSG_OPEN_FILE_PANEL), 0.3, 1, "Open new document");
+        new BMessage(MSG_OPEN_FILE_PANEL), 0.3, 1, "Open document");
     fOpenFileButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     fOpenFileButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
@@ -65,12 +65,12 @@ MainWindowRB::MainWindowRB(void)
     fullscreenButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
     ImageButton* fitPageHeight = new ImageButton("fit_page_height",
-        new BMessage(MSG_FIT_PAGE_HEIGHT), 0.3, 1, "Fit document vertically");
+        new BMessage(MSG_FIT_PAGE_HEIGHT), 0.3, 1, "Fit to height");
     fitPageHeight->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     fitPageHeight->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
     ImageButton* fitPageWidth = new ImageButton("fit_page_width",
-        new BMessage(MSG_FIT_PAGE_WIDTH), 0.3, 1, "Fit document horizontally");
+        new BMessage(MSG_FIT_PAGE_WIDTH), 0.3, 1, "Fit to width");
     fitPageWidth->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     fitPageWidth->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
@@ -129,7 +129,7 @@ MainWindowRB::MainWindowRB(void)
 
 
     ImageButton* setupPrinterButton = new ImageButton("printer", 
-    	new BMessage(MSG_SETUP_PRINTER), 0.3, 1, "Set up printer");
+    	new BMessage(MSG_SETUP_PRINTER), 0.3, 1, "Printer setup");
     setupPrinterButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     setupPrinterButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
@@ -146,7 +146,7 @@ MainWindowRB::MainWindowRB(void)
     helpButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
     ImageButton* supportButton = new ImageButton("support",
-    	new BMessage(MSG_SUPPORT), 0.3, 1, "Support Documentviewer");
+    	new BMessage(MSG_SUPPORT), 0.3, 1, "Contribute");
    	supportButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     supportButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 

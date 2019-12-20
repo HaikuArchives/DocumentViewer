@@ -40,9 +40,12 @@ ImageSpinner::ImageSpinner(float const& imageHeight)
 	fBasicImageSpinner->SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, fImageHeight + 6));
 	fBasicImageSpinner->SetExplicitMinSize(BSize(0, 0/*fImageHeight + 6*/));
 
-	fDeleteButton = new ImageButton("quit", new BMessage(M_DELETE), 0.3, 1, "Remove document");
-	fBackButton = new ImageButton("back", new BMessage(M_MOVE_LEFT), 0.3, 1, "Previous document");
-    fNextButton = new ImageButton("next", new BMessage(M_MOVE_RIGHT), 0.3, 1, "Next document");
+	fDeleteButton = new ImageButton("quit",
+		new BMessage(M_DELETE), 0.3, 1, "Remove document");
+	fBackButton = new ImageButton("back",
+		new BMessage(M_MOVE_LEFT), 0.3, 1, "Previous document");
+	fNextButton = new ImageButton("next",
+		new BMessage(M_MOVE_RIGHT), 0.3, 1, "Next document");
     fOpenButton = new ImageButton("open_document",
     	new BMessage(MSG_OPEN_FILE_PANEL), 0.3, 1, "Open document");
 

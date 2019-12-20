@@ -82,7 +82,7 @@ BookmarksView::BookmarksView(void)
     bookmarkDeleteButton->SetExplicitMaxSize(BSize(20, 20));
     
     ImageButton* bookmarkAddButton = new ImageButton("plus",
-        new BMessage(MSG_ZOOM_OUT), 0.3, 1, "New bookmark");
+        new BMessage(MSG_ZOOM_OUT), 0.3, 1, "Add bookmark");
     bookmarkAddButton->SetExplicitMinSize(BSize(20, 20));
     bookmarkAddButton->SetExplicitMaxSize(BSize(20, 20));
     

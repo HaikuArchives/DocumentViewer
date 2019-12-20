@@ -22,7 +22,7 @@
 using namespace std;
 
 ImageButton::ImageButton(BString imageName,BMessage *message,
-                        float marginProportion, int frameBehaviour, 
+                        float marginProportion, int frameBehaviour,
                         const char* tooltip, const char* name,  uint32 flags)
     :
     BButton(name, "", message, flags),

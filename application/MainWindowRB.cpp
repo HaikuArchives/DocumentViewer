@@ -44,7 +44,8 @@ MainWindowRB::MainWindowRB(void)
     fOpenFileButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     fOpenFileButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
-    fQuitButton = new ImageButton("quit", new BMessage(MSG_APP_QUIT), 0.3, 1, "Close document");
+    fQuitButton = new ImageButton("quit", new BMessage(MSG_APP_QUIT),
+		0.3, 1, "Close document");
     fQuitButton->SetExplicitMinSize(BSize(fMaxHeight, 0));
     fQuitButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
@@ -74,7 +75,7 @@ MainWindowRB::MainWindowRB(void)
     fitPageWidth->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     fitPageWidth->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
-	ImageButton* zoomOriginal = new ImageButton("zoom_original", 
+	ImageButton* zoomOriginal = new ImageButton("zoom_original",
 		new BMessage(MSG_NO_ZOOM), 0.3, 1, "Reset zoom");
     zoomOriginal->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     zoomOriginal->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
@@ -89,11 +90,13 @@ MainWindowRB::MainWindowRB(void)
     zoomIn->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     zoomIn->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
-    ImageButton* rotateLeftButton = new ImageButton("rotate_left", nullptr, 0.3, 1, "Rotate left");
+    ImageButton* rotateLeftButton = new ImageButton("rotate_left", nullptr,
+		0.3, 1, "Rotate left");
     rotateLeftButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     rotateLeftButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
-    ImageButton* rotateRightButton = new ImageButton("rotate_right", nullptr, 0.3, 1, "Rotate right");
+    ImageButton* rotateRightButton = new ImageButton("rotate_right", nullptr,
+		0.3, 1, "Rotate right");
     rotateRightButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     rotateRightButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 

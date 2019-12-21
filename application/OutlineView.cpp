@@ -312,22 +312,22 @@ OutlineView::OutlineView(void)
 {
 	const float iconHeight = 30;
   	fDeleteItem = new ImageButton("quit",
-        new BMessage(M_DELETE_ITEM), 0.3, 1, "Remove shortcut");
+        new BMessage(M_DELETE_ITEM), 0.3, 1, "Remove outline");
     fDeleteItem->SetExplicitMinSize(BSize(iconHeight, iconHeight));
     fDeleteItem->SetExplicitMaxSize(BSize(iconHeight, iconHeight));
 
     fAddItem = new ImageButton("plus",
-        new BMessage(M_ADD_ITEM), 0.3, 1, "Add shortcut");
+        new BMessage(M_ADD_ITEM), 0.3, 1, "Add outline");
     fAddItem->SetExplicitMinSize(BSize(iconHeight, iconHeight));
     fAddItem->SetExplicitMaxSize(BSize(iconHeight, iconHeight));
 
     fEditItem = new ImageButton("edit",
-        new BMessage(M_EDIT_ITEM), 0.3, 1, "Edit shortcut");
+        new BMessage(M_EDIT_ITEM), 0.3, 1, "Edit outline");
     fEditItem->SetExplicitMinSize(BSize(iconHeight, iconHeight));
     fEditItem->SetExplicitMaxSize(BSize(iconHeight, iconHeight));
 
     fFindNext = new ImageButton("find_next",
-        new BMessage(M_FIND_NEXT), 0.3, 1, "Search shortcuts");
+        new BMessage(M_FIND_NEXT), 0.3, 1, "Search outline");
     fFindNext->SetExplicitMinSize(BSize(iconHeight, iconHeight));
     fFindNext->SetExplicitMaxSize(BSize(iconHeight, iconHeight));
 

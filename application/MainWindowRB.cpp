@@ -30,23 +30,25 @@ MainWindowRB::MainWindowRB(void)
     fAutohiding(false)
 {
 	SetFlags(Flags() | B_FULL_POINTER_HISTORY);
-	
+
 	unique_ptr<BMessage> navigationMessage(new BMessage(M_PAGENUMBER));
 	fPageNavigationView = new PageNavigationView(move(navigationMessage));
 
-	ImageButton* printButton = new ImageButton("print", new BMessage(MSG_PRINT_DOCUMENT), 0.3, 1);
+	ImageButton* printButton = new ImageButton("print", 
+		new BMessage(MSG_PRINT_DOCUMENT), 0.3, 1, "Print document");
     printButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     printButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-	
+
 	fOpenFileButton = new ImageButton("open_document",
-        new BMessage(MSG_OPEN_FILE_PANEL), 0.3, 1);
+        new BMessage(MSG_OPEN_FILE_PANEL), 0.3, 1, "Open document");
     fOpenFileButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     fOpenFileButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-    
-    fQuitButton = new ImageButton("quit", new BMessage(MSG_APP_QUIT), 0.3, 1);
+
+    fQuitButton = new ImageButton("quit", new BMessage(MSG_APP_QUIT),
+		0.3, 1, "Close document");
     fQuitButton->SetExplicitMinSize(BSize(fMaxHeight, 0));
     fQuitButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-    
+
     // Home Tab
     BGroupLayout* homeLayout = BGroupLayoutBuilder(B_HORIZONTAL, 0)
         .SetInsets(2, 2, 2, 2)
@@ -59,38 +61,44 @@ MainWindowRB::MainWindowRB(void)
     ;
 
     ImageButton* fullscreenButton = new ImageButton("fullscreen",
-        new BMessage(MSG_FULLSCREEN) , 0.3, 1);
+        new BMessage(MSG_FULLSCREEN) , 0.3, 1, "Fullscreen");
     fullscreenButton->SetExplicitMinSize(BSize(fMaxHeight, 0));
     fullscreenButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
+
     ImageButton* fitPageHeight = new ImageButton("fit_page_height",
-        new BMessage(MSG_FIT_PAGE_HEIGHT), 0.3, 1);
+        new BMessage(MSG_FIT_PAGE_HEIGHT), 0.3, 1, "Fit to height");
     fitPageHeight->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     fitPageHeight->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
+
     ImageButton* fitPageWidth = new ImageButton("fit_page_width",
-        new BMessage(MSG_FIT_PAGE_WIDTH), 0.3, 1);
+        new BMessage(MSG_FIT_PAGE_WIDTH), 0.3, 1, "Fit to width");
     fitPageWidth->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     fitPageWidth->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
-
-	ImageButton* zoomOriginal = new ImageButton("zoom_original", new BMessage(MSG_NO_ZOOM), 0.3, 1);
+	ImageButton* zoomOriginal = new ImageButton("zoom_original",
+		new BMessage(MSG_NO_ZOOM), 0.3, 1, "Reset zoom");
     zoomOriginal->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     zoomOriginal->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-    
+
     ImageButton* zoomOut = new ImageButton("zoom_out",
-        new BMessage(MSG_ZOOM_OUT), 0.3, 1);
+        new BMessage(MSG_ZOOM_OUT), 0.3, 1, "Zoom out");
     zoomOut->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     zoomOut->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
+
     ImageButton* zoomIn = new ImageButton("zoom_in",
-        new BMessage(MSG_ZOOM_IN), 0.3, 1);
+        new BMessage(MSG_ZOOM_IN), 0.3, 1, "Zoom in");
     zoomIn->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     zoomIn->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-    ImageButton* rotateLeftButton = new ImageButton("rotate_left", nullptr, 0.3, 1);
+
+    ImageButton* rotateLeftButton = new ImageButton("rotate_left", nullptr,
+		0.3, 1, "Rotate left");
     rotateLeftButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     rotateLeftButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-    ImageButton* rotateRightButton = new ImageButton("rotate_right", nullptr, 0.3, 1);
+
+    ImageButton* rotateRightButton = new ImageButton("rotate_right", nullptr,
+		0.3, 1, "Rotate right");
     rotateRightButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     rotateRightButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-
 
     // View Tab
     BGroupLayout* viewLayout = BGroupLayoutBuilder(B_HORIZONTAL, 0)
@@ -121,9 +129,10 @@ MainWindowRB::MainWindowRB(void)
         .AddGlue(0)
         .RootLayout()
     ;
-    
-    
-    ImageButton* setupPrinterButton = new ImageButton("printer", new BMessage(MSG_SETUP_PRINTER), 0.3, 1);
+
+
+    ImageButton* setupPrinterButton = new ImageButton("printer", 
+    	new BMessage(MSG_SETUP_PRINTER), 0.3, 1, "Printer setup");
     setupPrinterButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     setupPrinterButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
 
@@ -133,18 +142,18 @@ MainWindowRB::MainWindowRB(void)
         .AddGlue(0)
     	.RootLayout()
     ;
-    
+
     ImageButton* helpButton = new ImageButton("help2",
-    	new BMessage(MSG_HELP), 0.3, 1);
+    	new BMessage(MSG_HELP), 0.3, 1, "Help");
    	helpButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     helpButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-    
+
     ImageButton* supportButton = new ImageButton("support",
-    	new BMessage(MSG_SUPPORT), 0.3, 1);
+    	new BMessage(MSG_SUPPORT), 0.3, 1, "Contribute");
    	supportButton->SetExplicitMinSize(BSize(fMaxHeight, fMaxHeight));
     supportButton->SetExplicitMaxSize(BSize(fMaxHeight, fMaxHeight));
-    
-    
+
+
     // Configure Tab
     BGroupLayout* helpLayout = BGroupLayoutBuilder(B_HORIZONTAL, 0)
         .Add(helpButton)
@@ -237,14 +246,14 @@ MainWindowRB::MessageReceived(BMessage* message)
             message->FindInt32("info", &value);
             ++value;
 			fPageNavigationView->SetValue(value);
-			
+
             break;
         }
-        
+
         case M_PAGENUMBER:
         	_GoToPage(fPageNavigationView->Value() - 1);
         	break;
-        	
+
         default:
             BGroupView::MessageReceived(message);
     }

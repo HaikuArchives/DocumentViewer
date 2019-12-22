@@ -29,6 +29,7 @@ class ImageButton : public BButton
 public:
                     ImageButton(BString imageName, BMessage *message = nullptr,
                         float marginProportion = 0, int frameBehaviour = 0,
+                        const char* tooltip = NULL,
                         const char* name = "im_button",
                         uint32 flags = B_FRAME_EVENTS | B_WILL_DRAW
                             | B_NAVIGABLE |B_FULL_UPDATE_ON_RESIZE

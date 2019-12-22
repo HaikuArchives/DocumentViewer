@@ -77,17 +77,17 @@ BookmarksView::BookmarksView(void)
     BGroupView("Bookmarks_view", B_VERTICAL, 0)
 {  
     ImageButton* bookmarkDeleteButton = new ImageButton("quit",
-        new BMessage(MSG_ZOOM_IN), 0.3, 1);
+        new BMessage(MSG_ZOOM_IN), 0.3, 1, "Delete bookmark");
     bookmarkDeleteButton->SetExplicitMinSize(BSize(20, 20));
     bookmarkDeleteButton->SetExplicitMaxSize(BSize(20, 20));
     
     ImageButton* bookmarkAddButton = new ImageButton("plus",
-        new BMessage(MSG_ZOOM_OUT), 0.3, 1);
+        new BMessage(MSG_ZOOM_OUT), 0.3, 1, "Add bookmark");
     bookmarkAddButton->SetExplicitMinSize(BSize(20, 20));
     bookmarkAddButton->SetExplicitMaxSize(BSize(20, 20));
     
     ImageButton* bookmarkEditButton = new ImageButton("edit",
-        new BMessage(MSG_NO_FIT), 0.3, 1);
+        new BMessage(MSG_NO_FIT), 0.3, 1, "Edit bookmark");
     bookmarkEditButton->SetExplicitMinSize(BSize(20, 20));
     bookmarkEditButton->SetExplicitMaxSize(BSize(20, 20));
     

@@ -23,7 +23,7 @@ using namespace std;
 
 ImageButton::ImageButton(BString imageName,BMessage *message,
                         float marginProportion, int frameBehaviour,
-                        const char* name,  uint32 flags)
+                        const char* tooltip, const char* name,  uint32 flags)
     :
     BButton(name, "", message, flags),
     fImageName(imageName),
@@ -55,6 +55,9 @@ ImageButton::ImageButton(BString imageName,BMessage *message,
 
     fGradientHighlight.SetStart(0, 0);
     fGradientPressed.SetStart(0, 0);
+    
+	if (tooltip != NULL)
+		SetToolTip(tooltip);
 }
 
 

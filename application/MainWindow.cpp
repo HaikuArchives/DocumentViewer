@@ -265,7 +265,8 @@ MainWindow::_OpenFile(BString const& path, BString const& fileType,
     	fDocumentView->FileChanged(path, fileType, password);
     	fPreviewView->FileChanged(path, fileType, password);
     } catch(...) {
-    	fCardLayout->SetVisibleItem((BLayoutItem*)fIntroLayout);
+		BAlert* alert = new BAlert("error", "Can't open the file!", "OK");
+		alert->Go();
   		return;
     }
     fOutlineView->EngineChanged(fPreviewView->Engine());

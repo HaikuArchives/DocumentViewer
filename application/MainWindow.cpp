@@ -207,7 +207,14 @@ MainWindow::MessageReceived(BMessage* message)
         	int32 page = 0;
         	message->FindInt32("page", &page);
         	auto type = _FileType(file);
-    		_OpenFile(file, type, password, page);
+        	if (type == "djvu" || type == "pdf" || type == "xps") {
+    			_OpenFile(file, type, password, page);
+        	}
+        	else {
+        		BAlert *alert = new BAlert("Error", "Wrong file format.", "Ok", NULL, NULL,
+        									B_WIDTH_AS_USUAL, B_STOP_ALERT);
+        		alert->Go();
+        	}
         	break;
         }
 

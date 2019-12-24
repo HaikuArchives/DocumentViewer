@@ -207,12 +207,12 @@ MainWindow::MessageReceived(BMessage* message)
         	int32 page = 0;
         	message->FindInt32("page", &page);
         	auto type = _FileType(file);
-        	if (type == "djvu" || type == "pdf" || type == "xps") {
+        	if (type != "") {
     			_OpenFile(file, type, password, page);
         	}
         	else {
-        		BAlert *alert = new BAlert("Error", "Wrong file format.", "Ok", NULL, NULL,
-        									B_WIDTH_AS_USUAL, B_STOP_ALERT);
+        		BAlert *alert = new BAlert("Error", "Wrong file format.", "OK", NULL, NULL,
+        								B_WIDTH_AS_USUAL, B_STOP_ALERT);
         		alert->Go();
         	}
         	break;
@@ -258,7 +258,7 @@ MainWindow::_FileType(BString const& file)
 		if (file.IFindLast("xps") != B_ERROR)
 			type = "xps";
 	}
-
+	
 	return type;
 }
 

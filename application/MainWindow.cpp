@@ -212,7 +212,7 @@ MainWindow::MessageReceived(BMessage* message)
         	}
         	else {
         		BAlert *alert = new BAlert("Error", "Wrong file format.", "OK", NULL, NULL,
-        								B_WIDTH_AS_USUAL, B_STOP_ALERT);
+        						B_WIDTH_AS_USUAL, B_STOP_ALERT);
         		alert->Go();
         	}
         	break;
@@ -258,7 +258,7 @@ MainWindow::_FileType(BString const& file)
 		if (file.IFindLast("xps") != B_ERROR)
 			type = "xps";
 	}
-	
+
 	return type;
 }
 

@@ -198,7 +198,7 @@ BasicDocumentView::SetFile(const BString& filename, BString const& fileType,
 	else if (fileType == "djvu")
 		fEngine = unique_ptr<BaseEngine>(new DJVUEngine(filename, password));
 	else
-		return;
+		throw B_ERROR;
 		
 	fHighlightUnderText = fEngine->HighlightUnderText();
 	

@@ -286,6 +286,8 @@ BasicPreviewView::SetFile(BString file, BString fileType, BString& password)
     	fEngine = new DJVUEngine(file, password);
 	else if (fileType == "pdf" || fileType == "xps")
     	fEngine = new PDFEngine(file, password);
+	else
+		throw B_ERROR;
     
     _AdaptScrollBarRange();
     Invalidate();   

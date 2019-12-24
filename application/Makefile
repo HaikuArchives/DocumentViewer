@@ -45,6 +45,7 @@ SRCS = BaseEngine.cpp \
 	PageNavigationView.cpp \
 	PasswordRequestWindow.cpp \
 	PDFEngine.cpp \
+	PDFFilter.cpp \
 	PreviewView.cpp \
 	PrintingWindow.cpp \
 	PrintPreviewView.cpp \

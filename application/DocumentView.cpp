@@ -78,6 +78,7 @@ DocumentView::FileChanged(const BString& file, BString const& fileType,
 	BString& password)
 {
 	fBasicDocumentView->SetFile(file, fileType, password);
+	Window()->PostMessage(MSG_FIT_PAGE_HEIGHT);
 }
 
 

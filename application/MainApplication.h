@@ -17,6 +17,7 @@
 #include "Debug.h"
 #include "MainWindow.h"
 #include "Messages.h"
+#include "PDFFilter.h"
 
 class MainApplication : public BApplication
 {
@@ -114,17 +115,17 @@ public:
     {
         if (fFilePanel == nullptr)
             fFilePanel = new BFilePanel (B_OPEN_PANEL,
-                            nullptr, nullptr, B_FILE_NODE, true, nullptr, nullptr);
+                            nullptr, nullptr, B_FILE_NODE, true, nullptr, &fPDFFilter);
 
         fFilePanel->Show();
     }
-
 
 private:
     MainWindow*		fMainWindow;
     BFilePanel*     fFilePanel;
     bool            fToOpenFilePanel;
-
+    PDFFilter       fPDFFilter;
+	
     Debug           out;
 };
 

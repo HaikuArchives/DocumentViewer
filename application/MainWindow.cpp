@@ -49,13 +49,20 @@ MainWindow::MainWindow(void)
 	fTabView1 = new ImageTabView("tab_view1");
 
 	fPreviewView = new PreviewView();
-	fTabView1->AddTab(fPreviewView, new ImageTab());
+	ImageTab* previewViewTab = new ImageTab("preview");
+	fTabView1->AddTab(fPreviewView, previewViewTab);
+	previewViewTab->SetLabel("Preview");
+
 
 	fOutlineView = new OutlineView();
-	fTabView1->AddTab(fOutlineView, new ImageTab());
+	ImageTab* outlineViewTab = new ImageTab("outline");
+	fTabView1->AddTab(fOutlineView, outlineViewTab);
+	outlineViewTab->SetLabel("Outline");
 
 	fSearchView = new SearchView();
-	fTabView1->AddTab(fSearchView, new ImageTab());
+	ImageTab* searchViewTab = new ImageTab("find");
+	fTabView1->AddTab(fSearchView, searchViewTab);
+	searchViewTab->SetLabel("Find");
 
 	fTabView1->Select(0);
 	fDocumentView = new DocumentView("", "", fPassword);

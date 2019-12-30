@@ -13,7 +13,6 @@
 #include <Rect.h>
 #include <String.h>
 #include <TabView.h>
-#include <String.h>
 #include "Debug.h"
 
 class ImageTab : public BTab

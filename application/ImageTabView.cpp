@@ -16,12 +16,12 @@
 
 #include "Tools.h"
 
-ImageTab::ImageTab(const char* img_label, BView* tabView)
+ImageTab::ImageTab(const char* imgName, BView* tabView)
     :
     BTab(tabView)
 {
     fBitmap = nullptr;
-    fImageLabel = img_label;
+    fImageName.SetTo(imgName);
 }
 
 
@@ -32,10 +32,10 @@ ImageTab::DrawLabel(BView* owner, BRect frame)
     int size = std::min(frame.Width(), frame.Height()) - 2;
 
     if (fBitmap == nullptr) {
-        fBitmap = Tools::LoadBitmap(fImageLabel, size);
+        fBitmap = Tools::LoadBitmap(fImageName, size);
     } else if (fBitmap->Bounds().Height() != size) {
         delete fBitmap;
-        fBitmap = Tools::LoadBitmap(fImageLabel, size);
+        fBitmap = Tools::LoadBitmap(fImageName, size);
     }
 
     owner->SetDrawingMode(B_OP_OVER);
@@ -69,11 +69,11 @@ ImageTabView::TabFrame(int32 index) const
 void
 ImageTabView::MouseMoved(BPoint where, uint32 code, const BMessage * dragMessage)
 {
-	int32 num_tabs = CountTabs();
+	int32 numTabs = CountTabs();
 	if (code == B_INSIDE_VIEW || code == B_ENTERED_VIEW) {
-		for (int i = 0; i < num_tabs; i++) {
-			const BRect tab_rect = TabFrame(i);
-			if (tab_rect.Contains(where)) {
+		for (int i = 0; i < numTabs; i++) {
+			const BRect tabRect = TabFrame(i);
+			if (tabRect.Contains(where)) {
 				SetToolTip(TabAt(i)->Label());
 			}
 		}

@@ -13,19 +13,19 @@
 #include <Rect.h>
 #include <String.h>
 #include <TabView.h>
-
+#include <String.h>
 #include "Debug.h"
 
 class ImageTab : public BTab
 {
 public:
-                    ImageTab(const char* image_label, BView* tabView = nullptr);
+                    ImageTab(const char* imageName, BView* tabView = nullptr);
     virtual	void	DrawLabel(BView* owner, BRect frame);
 
 private:
     BBitmap*        fBitmap;
     Debug           out;
-    const char* 	fImageLabel;
+    BString			fImageName;
 };
 
 

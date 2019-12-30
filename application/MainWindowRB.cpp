@@ -166,21 +166,21 @@ MainWindowRB::MainWindowRB(void)
     fTabView = new ImageTabView("tab_view");
     //fTabView->SetTabWidth(B_WIDTH_FROM_LABEL);
 
-    fTabsVec.push_back(new ImageTab());
+    fTabsVec.push_back(new ImageTab("home"));
 	fTabView->AddTab(homeLayout->View(), fTabsVec.back());
-	fTabsVec.back()->SetLabel("home");
-    fTabsVec.push_back(new ImageTab());
+	fTabsVec.back()->SetLabel("Home");
+    fTabsVec.push_back(new ImageTab("zoom_fit_best"));
 	fTabView->AddTab(viewLayout->View(), fTabsVec.back());
-	fTabsVec.back()->SetLabel("zoom_fit_best");
-    fTabsVec.push_back(new ImageTab());
+	fTabsVec.back()->SetLabel("View");
+    fTabsVec.push_back(new ImageTab("marker"));
 	fTabView->AddTab(editLayout->View(), fTabsVec.back());
-	fTabsVec.back()->SetLabel("marker");
-    fTabsVec.push_back(new ImageTab());
+	fTabsVec.back()->SetLabel("Edit");
+    fTabsVec.push_back(new ImageTab("configure"));
     fTabView->AddTab(configureLayout->View(), fTabsVec.back());
-	fTabsVec.back()->SetLabel("configure");
-	fTabsVec.push_back(new ImageTab());
+	fTabsVec.back()->SetLabel("Configure");
+	fTabsVec.push_back(new ImageTab("help"));
     fTabView->AddTab(helpLayout->View(), fTabsVec.back());
-	fTabsVec.back()->SetLabel("help");
+	fTabsVec.back()->SetLabel("Help");
 
     BLayoutBuilder::Group<>(this)
         .Add(fTabView)

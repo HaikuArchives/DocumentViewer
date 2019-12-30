@@ -13,18 +13,18 @@
 #include <Rect.h>
 #include <String.h>
 #include <TabView.h>
-
 #include "Debug.h"
 
 class ImageTab : public BTab
 {
 public:
-                    ImageTab(BView* tabView = nullptr);
+                    ImageTab(const char* imageName, BView* tabView = nullptr);
     virtual	void	DrawLabel(BView* owner, BRect frame);
 
 private:
     BBitmap*        fBitmap;
     Debug           out;
+    BString			fImageName;
 };
 
 
@@ -33,6 +33,7 @@ class ImageTabView : public BTabView
 public:
                     ImageTabView(const char* name = "im_tabview");
     virtual	BRect	TabFrame(int32 index) const;
+    virtual void	MouseMoved(BPoint where, uint32 code, const BMessage * dragMessage);
     
 
 private:

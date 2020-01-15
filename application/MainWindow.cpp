@@ -99,6 +99,7 @@ MainWindow::MainWindow(void)
 	fCardLayout->AddItem(fDocumentLayout);
 	fCardLayout->SetVisibleItem(fIntroLayout);
 	_LoadSettings();
+	ResizeTo(1200, 600); ///Show 3 documents and minimize empty space
 	Show();
 }
 
@@ -158,6 +159,7 @@ MainWindow::MessageReceived(BMessage* message)
    			fCardLayout->SetVisibleItem((BLayoutItem*)fIntroLayout);
    			fImageSpinner->MakeFocus(true);
    			SetTitle("DocumentViewer");
+			ResizeTo(1200, 600); //Show 3 documents and minimize empty space
 			//be_app->PostMessage(B_QUIT_REQUESTED);
 			break;
         }

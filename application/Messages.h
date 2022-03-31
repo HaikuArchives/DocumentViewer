@@ -14,7 +14,7 @@ enum
         MSG_ACTIVE_PAGE             	= 'ga01'    ,
         MSG_ANSWER_CURRENT_PAGENUMBER	= 'ga02'	,
 
-		MSG_APP_QUIT                	= 'ga02'    ,
+		MSG_APP_QUIT                	= 'gb01'    ,
 
         MSG_FIT_PAGE_HEIGHT         	= 'gf01'    ,
         MSG_FIT_PAGE_WIDTH          	= 'gf02'    ,

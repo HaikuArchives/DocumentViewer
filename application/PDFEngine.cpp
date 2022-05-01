@@ -249,15 +249,6 @@ BString
 PDFEngine::GetProperty(BString name)
 {
 	BString property;
-	/*
-	fz_obj* info = fz_dict_gets(fDocument->trailer, "Info");
-
-	if (info) {
-		fz_obj* obj = fz_dict_gets(info, const_cast<char*>(name.String()));
-		if (obj)
-			property = pdf_to_utf8(obj);
-	}
-	*/
 
 	return property;
 }

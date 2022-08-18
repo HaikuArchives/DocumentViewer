@@ -130,25 +130,27 @@ PDFEngine::WriteOutline(BOutlineListView* list)
 {
 	auto outline = fz_load_outline(fContext, fDocument);
 
-	std::function<void(fz_outline*, BOutlineListView*, BListItem*, int)> OutlineToList =
-	[&OutlineToList](fz_outline* outline, BOutlineListView* list, BListItem* super, int level) {
+	std::function<void(fz_context*, fz_document*, fz_outline*, BOutlineListView*, BListItem*, int)> OutlineToList =
+	[&OutlineToList](fz_context* ctx, fz_document* doc, fz_outline* outline, BOutlineListView* list, BListItem* super, int level) {
 		OutlineItem* item;
+		int page_number;
 		while (outline) {
-			if (outline->page > -1)
-				item = new OutlineItem(outline->title, outline->page);
+			page_number = fz_page_number_from_location(ctx, doc, outline->page);
+			if (page_number > -1)
+				item = new OutlineItem(outline->title, page_number);
 			else
 				item = new OutlineItem(outline->title, 0);
 
 			list->AddUnder(item, super);
 
 			if (outline->down)
-				OutlineToList(outline->down,list, item, level + 1);
+				OutlineToList(ctx, doc, outline->down,list, item, level + 1);
 
 			outline = outline->next;
 		}
 	};
 
-	OutlineToList(outline, list, nullptr, 0);
+	OutlineToList(fContext, fDocument, outline, list, nullptr, 0);
 	fz_drop_outline(fContext, outline);
 }
 
@@ -199,38 +201,43 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
 		// Now actually get the boxes
 		static const int MAX_SEARCHES = 500;
 		fz_quad boxes[MAX_SEARCHES];
-		int count = fz_search_stext_page(fContext, text, name, boxes, MAX_SEARCHES);
+		// Keep track of the hit marks
+		int hit_marks[MAX_SEARCHES];
+		int count = fz_search_stext_page(fContext, text, name, hit_marks, boxes, MAX_SEARCHES);
 
-		for(int i = 0; i < count; i++) {
-			fz_rect fr = fz_rect_from_quad(boxes[i]);
-			BRect br;
-			br.top = fr.y0;
-			br.bottom = fr.y1;
-			br.left = fr.x0;
-			br.right = fr.x1;
+		for (int i = 0; i < count; i++) {
+			// Attempt to avoid duplicates
+			if (hit_marks[i]) {
+				fz_rect fr = fz_rect_from_quad(boxes[i]);
+				BRect br;
+				br.top = fr.y0;
+				br.bottom = fr.y1;
+				br.left = fr.x0;
+				br.right = fr.x1;
 
-			// Get some context: extract some text around the match by enlarging
-			// the rect to cover a greater part of the text
-			fr.x0 -= 1000;
-			fr.x1 += 1000;
+				// Get some context: extract some text around the match by enlarging
+				// the rect to cover a greater part of the text
+				fr.x0 -= 1000;
+				fr.x1 += 1000;
 
-			BString context(fz_copy_rectangle(fContext, text, fr, false));
-			int pos = context.FindFirst(name);
+				BString context(fz_copy_rectangle(fContext, text, fr, false));
+				int pos = context.FindFirst(name);
 
-			// Check that we get a case match if requested
-			if (needMatchCase && pos < 0)
-				continue;
-
-			// Filter out non-whole word results
-			if (needWholeWord) {
-				if (pos > 0 && isalpha(context[pos - 1]))
+				// Check that we get a case match if requested
+				if (needMatchCase && pos < 0)
 					continue;
-				if (isalpha(context[pos + name.Length()]))
-					continue;
+
+				// Filter out non-whole word results
+				if (needWholeWord) {
+					if (pos > 0 && isalpha(context[pos - 1]))
+						continue;
+					if (isalpha(context[pos + name.Length()]))
+						continue;
+				}
+
+				rectVec.push_back(br);
+				contextVec.push_back(context);
 			}
-
-			rectVec.push_back(br);
-			contextVec.push_back(context);
 		}
 
 

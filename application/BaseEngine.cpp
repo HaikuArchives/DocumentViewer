@@ -13,8 +13,8 @@
 
 using namespace std;
 
-pthread_mutex_t	BaseEngine::gEngineStopMutex;
-pthread_mutex_t	BaseEngine::gTextSearchStopMutex;
+pthread_mutex_t	BaseEngine::gEngineStopMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t	BaseEngine::gTextSearchStopMutex = PTHREAD_MUTEX_INITIALIZER;
 
 BaseEngine::BaseEngine(void)
 	:
@@ -38,7 +38,7 @@ BaseEngine::BaseEngine(void)
 BaseEngine::~BaseEngine()
 {
 	StopTextSearch();
-	
+
 	for (std::pair< BBitmap*, bool> bitmap : fBitmap) {
     	if (bitmap.first != nullptr) {
     		delete bitmap.first;
@@ -54,7 +54,10 @@ BaseEngine::Start(void)
 	fPages = PageCount();
 
     fBitmap.resize(fPages, std::pair<BBitmap*, bool>((BBitmap*)nullptr, false));
+
     fMutex.resize(fPages);
+	for (int i = 0; i < fPages; i++)
+		pthread_mutex_init(&fMutex[i], NULL);
 
 	pthread_create(&fDrawingThread, nullptr, _DrawingThread, (void*)(this));
 }
@@ -66,7 +69,7 @@ BaseEngine::Stop(void)
 	pthread_mutex_lock(&gEngineStopMutex);
 	fStopThread = true;
 	pthread_mutex_unlock(&gEngineStopMutex);
-	
+
 	while (true) {
 		usleep(1000);
 		pthread_mutex_lock(&gEngineStopMutex);
@@ -96,16 +99,16 @@ BaseEngine::_DrawingThread(void* arg)
     int currentPage = -1;
     int deleteIndex = 0;
     bool forwardPriority = true;
-	
+
 	while(true) {
 		pthread_mutex_lock(&gEngineStopMutex);
 		if (engine->fStopThread) {
 			engine->fStopThread = false;
 			pthread_mutex_unlock(&gEngineStopMutex);
-			return nullptr;			
+			return nullptr;
 		}
 		pthread_mutex_unlock(&gEngineStopMutex);
-		
+
         if (currentPage != engine->fCurrentPageNo) {
             if (engine->fCurrentPageNo < currentPage)
                 forwardPriority = false;
@@ -319,10 +322,10 @@ void
 BaseEngine::FindString(BString const& name, BLooper* looper, BHandler* handler, int32 flag)
 {
 	StopTextSearch();
-	
+
 	if (name.Length() < 2)
 		return;
-	
+
 	fSearchString = name;
 	fSearchFlag = flag;
 	fTargetLooper = looper;
@@ -336,6 +339,7 @@ tuple< vector<BString>, vector<BRect> >
 BaseEngine::_FindString(BString const& name, int const& page)
 {
 	//empty
+	return {};
 }
 
 
@@ -357,9 +361,9 @@ BaseEngine::_TextSearchThread(void* arg)
 			//return nullptr;
 		}
 		pthread_mutex_unlock(&gTextSearchStopMutex);
-		
+
 		auto t = engine->_FindString(name, page);
-		
+
 		for (int i = 0; i < get<0>(t).size(); ++i) {
 			BMessage msg(MSG_SEARCH_RESULT);
 			msg.AddInt32("page", page);
@@ -368,7 +372,7 @@ BaseEngine::_TextSearchThread(void* arg)
 			engine->fTargetLooper->PostMessage(&msg, engine->fSearchHandler);
 		}
 	}
-	
+
 	return nullptr;
 }
 
@@ -376,6 +380,6 @@ BaseEngine::_TextSearchThread(void* arg)
 bool
 BaseEngine::HighlightUnderText(void)
 {
-	return fHighlightUnderText;	
+	return fHighlightUnderText;
 }
 

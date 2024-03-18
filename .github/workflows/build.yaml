@@ -26,9 +26,9 @@ jobs:
           architecture: ${{ matrix.config.architecture }}
           run: |
             if [[ `uname -m` == BePC ]]; then
-              ssh user@localhost "pkgman update -y haiku_x86_devel devel:libdjvulibre_x86 devel:libfreetype_x86 devel:libjbig2dec_x86 devel:libjpeg_x86 devel:libmupdf_x86 devel:libopenjp2_x86	devel:libz_x86 cmd:gcc_x86" &&
+              ssh user@localhost "pkgman update -y haiku_x86_devel devel:libdjvulibre_x86 devel:libfreetype_x86 devel:libjbig2dec_x86 devel:libjpeg_x86 devel:libmupdf_x86 devel:libopenjp2_x86	devel:libz_x86 cmd:gcc_x86 cmd:as_x86" &&
               cd application && setarch x86 make
             else
-              ssh user@localhost "pkgman update -y haiku_devel devel:libdjvulibre devel:libfreetype devel:libjbig2dec devel:libjpeg devel:libmupdf devel:libopenjp2	devel:libz cmd:gcc" &&
+              ssh user@localhost "pkgman update -y haiku_devel devel:libdjvulibre devel:libfreetype devel:libjbig2dec devel:libjpeg devel:libmupdf devel:libopenjp2	devel:libz cmd:gcc cmd:as" &&
               cd application && make
             fi

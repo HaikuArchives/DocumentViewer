@@ -34,8 +34,8 @@ DJVUEngine::DJVUEngine(BString fileName, BString& password)
 	while (!ddjvu_document_decoding_done(fDocument))
 		_HandleDjvuMessages(fContext, true);
 
-    if (ddjvu_document_decoding_error(fDocument))
-        throw;
+	if (ddjvu_document_decoding_error(fDocument))
+		throw;
 
 	Start();
 }

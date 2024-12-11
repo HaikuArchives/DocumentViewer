@@ -30,27 +30,27 @@ public:
     int						PageCount(void) const;
 
     virtual BString         GetProperty(BString name);
-                                
+
  	virtual	void			WriteOutline(BOutlineListView* list);
 
- 	virtual std::unique_ptr<BBitmap> 	RenderBitmap(int const& pageNumber,int const& width,
-    										int const& height, int const& rotation = 0);
- 
+ 	virtual std::unique_ptr<BBitmap> 	RenderBitmap(int const& pageNumber,uint32 const& width,
+    										uint32 const& height, int const& rotation = 0);
+
 private:
     virtual std::pair<BBitmap*, bool>   _RenderBitmap(int const& pageNumber);
-    
+
     virtual std::tuple< std::vector<BString>, std::vector<BRect> >
     									_FindString(BString const& name, int const& page);
-    									
+
     void								_HandleDjvuMessages(ddjvu_context_t *context,
     										int wait = false);
 
     BString                 fFileName;
     BString               	fPassword;
-    
+
     ddjvu_context_t*		fContext;
     ddjvu_document_t*		fDocument;
-    
+
     static pthread_mutex_t 	gRendermutex;
 
     Debug             		out;

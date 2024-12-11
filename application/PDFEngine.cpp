@@ -270,7 +270,7 @@ PDFEngine::FileName(void) const
 
 unique_ptr<BBitmap>
 PDFEngine::RenderBitmap(int const& pageNumber,
-	int const& width, int const& height, int const& rotation)
+	uint32 const& width, uint32 const& height, int const& rotation)
 {
 	if (pageNumber < 0 || pageNumber >= fPages) {
 		return unique_ptr<BBitmap>(nullptr);
@@ -342,7 +342,7 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 			fz_run_display_list(fRenderContext, list, dev, ctm, bounds, nullptr);
    		 else
 			fz_run_page(fRenderContext, page, dev, ctm, nullptr);
-			
+
 		fz_close_device(fRenderContext, dev);
 		fz_drop_device(fRenderContext, dev);
 		dev = nullptr;
@@ -368,7 +368,7 @@ PDFEngine::RenderBitmap(int const& pageNumber,
 	BBitmap* bitmap = new BBitmap(BRect(0, 0, imageWidth - 1, imageHeight - 1), B_RGBA32);
 	bitmap->SetBits(fz_pixmap_samples(fRenderContext, image),
 		imageWidth * imageHeight * fz_pixmap_components(fRenderContext, image), 0, B_RGBA32);
-	
+
 	fz_close_device(fRenderContext, dev);
 	fz_drop_device(fRenderContext, dev);
 	fz_drop_pixmap(fRenderContext, image);

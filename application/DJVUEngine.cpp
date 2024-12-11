@@ -139,7 +139,7 @@ DJVUEngine::FileName(void) const
 
 unique_ptr<BBitmap>
 DJVUEngine::RenderBitmap(int const& pageNumber,
-	int const& width, int const& height, int const& rotation)
+	uint32 const& width, uint32 const& height, int const& rotation)
 {
 	if (pageNumber < 0 || pageNumber >= fPages) {
     	return unique_ptr<BBitmap>(nullptr);

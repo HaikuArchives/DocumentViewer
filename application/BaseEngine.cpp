@@ -364,7 +364,7 @@ BaseEngine::_TextSearchThread(void* arg)
 
 		auto t = engine->_FindString(name, page);
 
-		for (int i = 0; i < get<0>(t).size(); ++i) {
+		for (uint32 i = 0; i < get<0>(t).size(); ++i) {
 			BMessage msg(MSG_SEARCH_RESULT);
 			msg.AddInt32("page", page);
 			msg.AddString("context", move(get<0>(t)[i]));

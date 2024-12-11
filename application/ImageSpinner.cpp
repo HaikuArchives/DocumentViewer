@@ -210,7 +210,7 @@ BasicImageSpinner::Draw(BRect updateRect)
     	offset.y = 0;
 
     bool hasDrawn = false;
-   	int index = 0;
+   	uint32 index = 0;
     for (auto it = fItems.begin(); it != fItems.end(); ++it, ++index) {
     	BBitmap* bitmap = (BBitmap*)(&*get<0>(*it));
     	auto rect = bitmap->Bounds().OffsetByCopy(offset);
@@ -427,7 +427,7 @@ BasicImageSpinner::MoveLeftSelectedItem(void)
 
 
 	auto it = fItems.begin();
-	for (int i = 1; i < fCurrentIndex; ++i)
+	for (uint32 i = 1; i < fCurrentIndex; ++i)
 		++it;
 
 	auto left = it;
@@ -446,7 +446,7 @@ BasicImageSpinner::MoveRightSelectedItem(void)
 
 	float width = fSpace;
 	auto it = fItems.begin();
-	for (int i = 0; i < fCurrentIndex; ++i)
+	for (uint32 i = 0; i < fCurrentIndex; ++i)
 		++it;
 
 	auto left = it;
@@ -479,7 +479,7 @@ BasicImageSpinner::RemoveSelectedItem(void)
 		return;
 
 	auto it = fItems.begin();
-	for (int i = 0; i < fCurrentIndex; ++i)
+	for (uint32 i = 0; i < fCurrentIndex; ++i)
 		++it;
 
 	fTotalWidth -= (get<0>(*it)->Bounds().Width() + fSpace);
@@ -646,7 +646,7 @@ BasicImageSpinner::_Next(void)
 
 	float width = fSpace;
 	auto it = fItems.begin();
-	for (int i = 0; i <= fCurrentIndex; ++i, ++it)
+	for (uint32 i = 0; i <= fCurrentIndex; ++i, ++it)
 		width += get<0>(*it)->Bounds().Width() + fSpace;
 
 	if (Bounds().right < width)
@@ -667,7 +667,7 @@ BasicImageSpinner::_Back(void)
 
 	float width = 0;
 	auto it = fItems.begin();
-	for (int i = 0; i < fCurrentIndex; ++i, ++it)
+	for (uint32 i = 0; i < fCurrentIndex; ++i, ++it)
 		width += get<0>(*it)->Bounds().Width() + fSpace;
 
 	if (Bounds().left > width)

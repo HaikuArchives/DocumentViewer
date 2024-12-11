@@ -18,6 +18,7 @@ pthread_mutex_t	BaseEngine::gTextSearchStopMutex = PTHREAD_MUTEX_INITIALIZER;
 
 BaseEngine::BaseEngine(void)
 	:
+	fStopThread(false),
   	fZoomFactor(1),
   	fPages(0),
  	fRotation(0),
@@ -26,9 +27,8 @@ BaseEngine::BaseEngine(void)
  	fCurrentPageNo(0),
  	fSearchFlag(0),
  	fDefaultRect(0, 0, 300, 500),
-  	fStopThread(false),
-  	fStopTextSearchThread(false),
-  	fHighlightUnderText(false)
+	fHighlightUnderText(false),
+	fStopTextSearchThread(false)
 {
 	fTextSearchThread = nullptr;
 	fDrawingThread = nullptr;

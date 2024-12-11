@@ -285,6 +285,10 @@ OutlineListView::Invoke(BMessage* message)
 		_GoToPage(item->PageNumber());
 
 	BListView::Invoke(message);
+
+	// added this return call to silence -Wreturn-type warning
+	// should probably be replaced by real error handling
+	return B_OK;
 }
 
 

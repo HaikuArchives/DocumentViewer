@@ -33,11 +33,11 @@ public:
     int						PageCount(void) const;
 
     virtual BString         GetProperty(BString name);
-                                
+
  	virtual	void			WriteOutline(BOutlineListView* list);
- 	
- 	virtual std::unique_ptr<BBitmap> RenderBitmap(int const& pageNumber,int const& width,
-    										int const& height, int const& rotation = 0);
+
+ 	virtual std::unique_ptr<BBitmap> RenderBitmap(int const& pageNumber,uint32 const& width,
+    										uint32 const& height, int const& rotation = 0);
 
 private:
     virtual std::pair<BBitmap*, bool>   _RenderBitmap(int const& pageNumber);
@@ -47,16 +47,16 @@ private:
     fz_document*			fDocument;
     fz_context*				fContext;
 	fz_context*				fRenderContext;
-    
+
     fz_page*				fPage;
 	fz_display_list*		fList;
 	fz_device*				fDev;
-    
+
     fz_colorspace*			fColorSpace;
 
     BString                 fFileName;
     BString               	fPassword;
-    
+
 	pthread_mutex_t			fRendermutex = PTHREAD_MUTEX_INITIALIZER;
 
     Debug             		out;

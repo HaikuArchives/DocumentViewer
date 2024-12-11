@@ -248,7 +248,7 @@ PDFEngine::_FindString(BString const& name, int const& pageNumber)
 		fz_rethrow(fContext);
 	}
 
-	return move(make_tuple(contextVec, rectVec));
+	return make_tuple(contextVec, rectVec);
 }
 
 

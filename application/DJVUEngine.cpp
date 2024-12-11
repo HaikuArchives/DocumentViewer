@@ -403,5 +403,5 @@ DJVUEngine::_FindString(BString const& name, int const& page)
 		}
 	}
 
-    return move(make_tuple(contextVec, rectVec));
+    return make_tuple(contextVec, rectVec);
 }

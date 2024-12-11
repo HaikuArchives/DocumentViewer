@@ -359,7 +359,7 @@ DJVUEngine::_FindString(BString const& name, int const& page)
 
 	bool foundMatch = false;
 
-	for (int i = 0; i < textVec.size(); ++i) {
+	for (uint32 i = 0; i < textVec.size(); ++i) {
 		foundMatch = false;
 
 		if (needMatchCase) {
@@ -387,12 +387,12 @@ DJVUEngine::_FindString(BString const& name, int const& page)
 			if (from < 0)
 				from = 0;
 
-			int to	 = i + deltaIndexRight;
+			uint32 to	 = i + deltaIndexRight;
 			if (to >= textVec.size())
 				to = textVec.size() - 1;
 
 			BString str;
-			for (int j = from; j < to; ++j) {
+			for (uint32 j = from; j < to; ++j) {
 				str += textVec[j];
 				str += " ";
 			}

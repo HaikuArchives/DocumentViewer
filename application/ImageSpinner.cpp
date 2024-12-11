@@ -444,7 +444,6 @@ BasicImageSpinner::MoveRightSelectedItem(void)
 		|| fItems.size() < 2)
 		return;
 
-	float width = fSpace;
 	auto it = fItems.begin();
 	for (uint32 i = 0; i < fCurrentIndex; ++i)
 		++it;
